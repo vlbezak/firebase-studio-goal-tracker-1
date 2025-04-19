@@ -17,18 +17,20 @@ const seasons = ["2024", "2025"];
 
 const seasonsMatches = {
   "2024": [
-    { id: "2024-match-1", result: 1, tournament: "2024-tournament-1", name: "Match 1" }, // 1 for win
-    { id: "2024-match-2", result: 0, tournament: "2024-tournament-1", name: "Match 2" }, // 0 for loss
-    { id: "2024-match-3", result: 0.5, name: "Match 3" }, // 0.5 for draw
-    { id: "2024-match-4", result: 1, name: "Match 4" },
-    { id: "2024-match-5", result: 0.5, name: "Match 5" },
+    { id: "2024-match-1", result: 1, tournament: "2024-tournament-1", name: "Match 1", score: "3-2" }, // 1 for win
+    { id: "2024-match-2", result: 0, tournament: "2024-tournament-1", name: "Match 2", score: "1-2" }, // 0 for loss
+    { id: "2024-match-3", result: 0.5, name: "Match 3", score: "2-2" }, // 0.5 for draw
+    { id: "2024-match-4", result: 1, name: "Match 4", score: "4-1" },
+    { id: "2024-match-5", result: 0.5, name: "Match 5", score: "0-0" },
+    { id: "2024-match-6", result: 1, name: "Match 6", score: "2-1" },
+    { id: "2024-match-7", result: 0, name: "Match 7", score: "0-1" },
   ],
   "2025": [
-    { id: "2025-match-1", result: 1, tournament: "2025-tournament-1", name: "Match 1" },
-    { id: "2025-match-2", result: 1, name: "Match 2" },
-    { id: "2025-match-3", result: 1, name: "Match 3" },
-    { id: "2025-match-4", result: 0, name: "Match 4" },
-    { id: "2025-match-5", result: 0, name: "Match 5" },
+    { id: "2025-match-1", result: 1, tournament: "2025-tournament-1", name: "Match 1", score: "2-0" },
+    { id: "2025-match-2", result: 1, name: "Match 2", score: "3-1" },
+    { id: "2025-match-3", result: 1, name: "Match 3", score: "1-0" },
+    { id: "2025-match-4", result: 0, name: "Match 4", score: "0-2" },
+    { id: "2025-match-5", result: 0, name: "Match 5", score: "1-3" },
   ],
 };
 
@@ -93,7 +95,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
             <CardTitle className="text-md">Last 5 Results</CardTitle>
           </CardHeader>
           <div className="flex items-center justify-around">
-            {matches.slice(0, 5).map((item, index) => {
+            {matches.slice(-5).map((item, index) => {
               let color = "var(--loss-color)";
               let letter = "L";
               if (item.result === 1) {
