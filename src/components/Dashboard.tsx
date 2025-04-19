@@ -66,10 +66,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
       <CardHeader>
         <CardTitle>
           <Link
-            href={{
-              pathname: "/",
-              query: { season: season },
-            }}
+            href={`/?season=${season}`}
           >
             {season}
           </Link>
@@ -79,15 +76,15 @@ const SeasonDashboard = ({ season }: { season: string }) => {
       <CardContent className="grid grid-cols-2 gap-4">
         <div className="flex flex-col justify-center">
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-green-500" />
+            <span className="w-4 h-4 rounded-full" style={{backgroundColor: "var(--win-color)"}} />
             <span>W: {wins}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-yellow-500" />
+            <span className="w-4 h-4 rounded-full" style={{backgroundColor: "var(--draw-color)"}} />
             <span>D: {draws}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-red-500" />
+            <span className="w-4 h-4 rounded-full" style={{backgroundColor: "var(--loss-color)"}} />
             <span>L: {losses}</span>
           </div>
         </div>
@@ -108,10 +105,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
               }
               return (
                 <Link
-                  href={{
-                    pathname: "/",
-                    query: { season: season, match: item.id },
-                  }}
+                  href={`/?season=${season}&match=${item.id}`}
                   key={item.id}
                   className="circle flex items-center justify-center"
                   style={{ backgroundColor: color, color: "white" }}

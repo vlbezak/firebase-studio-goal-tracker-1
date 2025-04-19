@@ -73,10 +73,7 @@ const AppSidebar = () => {
             <AccordionItem key={season} value={`season-${season}`}>
               <AccordionTrigger id={`season-${season}`}>
                 <Link
-                  href={{
-                    pathname: "/",
-                    query: { season: season },
-                  }}
+                  href={`/?season=${season}`}
                 >
                   {`Season ${season}`}
                 </Link>
@@ -91,10 +88,7 @@ const AppSidebar = () => {
                           {matches.filter(match => match.tournament === tournament.id).map(match => (
                             <li key={match.id} id={`match-${match.id}`}>
                               <Link
-                                href={{
-                                  pathname: "/",
-                                  query: { season: seasonParam, match: match.id },
-                                }}
+                                href={`/?season=${seasonParam}&match=${match.id}`}
                                 className={cn(matchParam === match.id ? "highlighted-match" : "")}
                               >
                                 {match.name}
@@ -109,10 +103,7 @@ const AppSidebar = () => {
                     <AccordionItem key={match.id} value={`match-${match.id}`} id={`match-${match.id}`}>
                       <AccordionTrigger>
                         <Link
-                          href={{
-                            pathname: "/",
-                            query: { season: seasonParam, match: match.id },
-                          }}
+                          href={`/?season=${seasonParam}&match=${match.id}`}
                           className={cn(matchParam === match.id ? "highlighted-match" : "")}
                         >
                           {match.name}
