@@ -10,23 +10,24 @@ import {
 } from "@/components/ui/card";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const seasons = ["2024", "2025"];
 
 const seasonsMatches = {
   "2024": [
-    { result: 1 }, // 1 for win
-    { result: 0 }, // 0 for loss
-    { result: 0.5 }, // 0.5 for draw
-    { result: 1 },
-    { result: 0.5 },
+    { id: "2024-match-1", result: 1, tournament: "2024-tournament-1" }, // 1 for win
+    { id: "2024-match-2", result: 0, tournament: "2024-tournament-1" }, // 0 for loss
+    { id: "2024-match-3", result: 0.5 }, // 0.5 for draw
+    { id: "2024-match-4", result: 1 },
+    { id: "2024-match-5", result: 0.5 },
   ],
   "2025": [
-    { result: 1 },
-    { result: 1 },
-    { result: 1 },
-    { result: 0 },
-    { result: 0 },
+    { id: "2025-match-1", result: 1, tournament: "2025-tournament-1" },
+    { id: "2025-match-2", result: 1 },
+    { id: "2025-match-3", result: 1 },
+    { id: "2025-match-4", result: 0 },
+    { id: "2025-match-5", result: 0 },
   ],
 };
 
@@ -72,31 +73,36 @@ const SeasonDashboard = ({ season }: { season: string }) => {
             <span>L: {losses}</span>
           </div>
         </div>
-        <CardHeader>
-          <CardTitle>Last 5 Results</CardTitle>
-          <CardDescription>Recent match outcomes</CardDescription>
-        </CardHeader>
-        <div className="flex items-center justify-around">
-          {matches.map((item, index) => {
-            let color = "var(--loss-color)";
-            let letter = "L";
-            if (item.result === 1) {
-              color = "var(--win-color)";
-              letter = "W";
-            } else if (item.result === 0.5) {
-              color = "var(--draw-color)";
-              letter = "D";
-            }
-            return (
-              <div
-                key={index}
-                className="circle flex items-center justify-center"
-                style={{ backgroundColor: color, color: 'white' }}
-              >
-                {letter}
-              </div>
-            );
-          })}
+        <div className="flex flex-col">
+          <CardHeader className="p-0">
+            <CardTitle className="text-md">Last 5 Results</CardTitle>
+          </CardHeader>
+          <div className="flex items-center justify-around">
+            {matches.slice(0, 5).map((item, index) => {
+              let color = "var(--loss-color)";
+              let letter = "L";
+              if (item.result === 1) {
+                color = "var(--win-color)";
+                letter = "W";
+              } else if (item.result === 0.5) {
+                color = "var(--draw-color)";
+                letter = "D";
+              }
+              return (
+                <Link
+                  href={{
+                    pathname: "/",
+                    query: { season: season, match: item.id },
+                  }}
+                  key={index}
+                  className="circle flex items-center justify-center"
+                  style={{ backgroundColor: color, color: "white" }}
+                >
+                  {letter}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,6 +12,12 @@ body {
   border-radius: 9999px;
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.highlighted-match {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  font-weight: bold;
 }
 
 @layer base {
