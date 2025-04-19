@@ -7,6 +7,7 @@ import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/co
 import {SoccerBallIcon} from "lucide-react";
 import {useSearchParams} from "next/navigation";
 import Link from "next/link";
+import {cn} from "@/lib/utils";
 
 const seasonsMatches = {
   "2024": [
@@ -70,7 +71,16 @@ const AppSidebar = () => {
         <Accordion type="single" collapsible className="w-full">
           {seasonsMatches && Object.keys(seasonsMatches).map((season) => (
             <AccordionItem key={season} value={`season-${season}`}>
-              <AccordionTrigger id={`season-${season}`}>{`Season ${season}`}</AccordionTrigger>
+              <AccordionTrigger id={`season-${season}`}>
+                <Link
+                  href={{
+                    pathname: "/",
+                    query: { season: season },
+                  }}
+                >
+                  {`Season ${season}`}
+                </Link>
+              </AccordionTrigger>
               <AccordionContent>
                 <Accordion type="single" collapsible className="w-full">
                   {seasonTournaments.map((tournament) => (

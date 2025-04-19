@@ -11,6 +11,7 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const seasons = ["2024", "2025"];
 
@@ -38,6 +39,9 @@ const tournaments = {
 
 const Dashboard = () => {
   const { setOpen } = useSidebar();
+  const searchParams = useSearchParams();
+  const seasonParam = searchParams.get("season");
+  const matchParam = searchParams.get("match");
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -108,7 +112,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
                     pathname: "/",
                     query: { season: season, match: item.id },
                   }}
-                  key={index}
+                  key={item.id}
                   className="circle flex items-center justify-center"
                   style={{ backgroundColor: color, color: "white" }}
                 >
