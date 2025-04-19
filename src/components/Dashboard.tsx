@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -96,17 +95,22 @@ const SeasonDashboard = ({ season }: { season: string }) => {
           <div className="flex items-center justify-around">
             {data.map((item, index) => {
               let color = "var(--loss-color)";
+              let letter = "L";
               if (item.result === 1) {
                 color = "var(--win-color)";
+                letter = "W";
               } else if (item.result === 0.5) {
                 color = "var(--draw-color)";
+                letter = "D";
               }
               return (
                 <div
                   key={index}
-                  className="circle"
-                  style={{ backgroundColor: color }}
-                />
+                  className="circle flex items-center justify-center"
+                  style={{ backgroundColor: color, color: 'white' }}
+                >
+                  {letter}
+                </div>
               );
             })}
           </div>
@@ -117,3 +121,5 @@ const SeasonDashboard = ({ season }: { season: string }) => {
 };
 
 export default Dashboard;
+
+    
