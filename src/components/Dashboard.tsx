@@ -16,19 +16,24 @@ const seasons = ["2024", "2025"];
 
 const seasonsMatches = {
   "2024": [
-    { id: "2024-match-1", result: 1, tournament: "2024-tournament-1" }, // 1 for win
-    { id: "2024-match-2", result: 0, tournament: "2024-tournament-1" }, // 0 for loss
-    { id: "2024-match-3", result: 0.5 }, // 0.5 for draw
-    { id: "2024-match-4", result: 1 },
-    { id: "2024-match-5", result: 0.5 },
+    { id: "2024-match-1", result: 1, tournament: "2024-tournament-1", name: "Match 1" }, // 1 for win
+    { id: "2024-match-2", result: 0, tournament: "2024-tournament-1", name: "Match 2" }, // 0 for loss
+    { id: "2024-match-3", result: 0.5, name: "Match 3" }, // 0.5 for draw
+    { id: "2024-match-4", result: 1, name: "Match 4" },
+    { id: "2024-match-5", result: 0.5, name: "Match 5" },
   ],
   "2025": [
-    { id: "2025-match-1", result: 1, tournament: "2025-tournament-1" },
-    { id: "2025-match-2", result: 1 },
-    { id: "2025-match-3", result: 1 },
-    { id: "2025-match-4", result: 0 },
-    { id: "2025-match-5", result: 0 },
+    { id: "2025-match-1", result: 1, tournament: "2025-tournament-1", name: "Match 1" },
+    { id: "2025-match-2", result: 1, name: "Match 2" },
+    { id: "2025-match-3", result: 1, name: "Match 3" },
+    { id: "2025-match-4", result: 0, name: "Match 4" },
+    { id: "2025-match-5", result: 0, name: "Match 5" },
   ],
+};
+
+const tournaments = {
+  "2024-tournament-1": { id: "2024-tournament-1", name: "Tournament 1" },
+  "2025-tournament-1": { id: "2025-tournament-1", name: "Tournament 1" },
 };
 
 const Dashboard = () => {
@@ -55,7 +60,16 @@ const SeasonDashboard = ({ season }: { season: string }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{season}</CardTitle>
+        <CardTitle>
+          <Link
+            href={{
+              pathname: "/",
+              query: { season: season },
+            }}
+          >
+            {season}
+          </Link>
+        </CardTitle>
         <CardDescription>Season Performance</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
