@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 // Import the actual SeasonDetails component
-import SeasonDetails from "./SeasonDetails"; 
+import SeasonDetails from "./SeasonDetails";
 
 // Mock data (consider moving this to a separate file/API later)
 const seasons = ["2024", "2025"];
@@ -48,13 +49,15 @@ const Dashboard = () => {
 
   // Conditionally render based on seasonParam
   if (seasonParam && seasons.includes(seasonParam)) {
-    // Render the actual SeasonDetails component
-    return <SeasonDetails season={seasonParam} matchId={matchParam} />; 
+    // Render the actual SeasonDetails component within the main content area
+    return (
+        <SeasonDetails season={seasonParam} matchId={matchParam} />
+    );
   }
 
-  // Original Dashboard View
+  // Original Dashboard View within the main content area
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4"> {/* Ensure Dashboard content is wrapped */}
       <h1 className="text-2xl font-bold">Season Performance</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {seasons.map((season) => (
@@ -65,7 +68,7 @@ const Dashboard = () => {
   );
 };
 
-// SeasonDashboard component remains unchanged 
+// SeasonDashboard component remains unchanged
 const SeasonDashboard = ({ season }: { season: string }) => {
   // Type assertion for seasonsMatches keys
   const matches = (seasonsMatches as Record<string, any[]>)[season] || [];
@@ -107,7 +110,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
             <CardTitle className="text-md">Last 5 Results</CardTitle>
           </CardHeader>
           <div className="flex items-center justify-around">
-            {matches.slice(-5).map((item, index) => {
+            {matches.slice(-5).map((item) => {
               let color = "var(--loss-color)";
               let letter = "L";
               if (item.result === 1) {

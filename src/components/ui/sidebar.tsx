@@ -142,7 +142,7 @@ const SidebarProvider = React.forwardRef<
     )
 
     // Ensure the main layout structure is correct
-    // The main content (SidebarInset) should be a sibling of the Sidebar itself
+    // The main content should be a sibling of the Sidebar itself
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
@@ -154,12 +154,11 @@ const SidebarProvider = React.forwardRef<
                 ...style,
               } as React.CSSProperties
             }
-             // Removed 'group/sidebar-wrapper' as it might interfere, ensure flex layout
-            className={cn("flex min-h-svh w-full", className)}
+            className={cn("w-full", className)} // Removed flex and min-h-svh, handled in layout.tsx
             ref={ref}
             {...props}
           >
-             {/* Sidebar and Main Content should render here */}
+             {/* Sidebar and Main Content are rendered as siblings in layout.tsx */}
             {children}
           </div>
         </TooltipProvider>
@@ -214,13 +213,13 @@ const Sidebar = React.forwardRef<
 
     // Desktop view
     return (
-      <div
+      <aside // Use aside semantic element for sidebar
         ref={ref}
-         // Added 'relative' for positioning context if needed by children
         className={cn(
-          "group peer hidden md:flex md:flex-col relative text-sidebar-foreground transition-all duration-300 ease-in-out", // Use flex-col for vertical layout
+          "group fixed inset-y-0 z-30 hidden md:flex md:flex-col text-sidebar-foreground transition-all duration-300 ease-in-out", // Use fixed positioning
           open ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]", // Control width based on open state
           variant === "sidebar" && "border-r border-sidebar-border", // Add border for default variant
+          side === "left" ? "left-0" : "right-0", // Position based on side
           className
         )}
         data-state={state}
@@ -240,7 +239,7 @@ const Sidebar = React.forwardRef<
         </div>
         {/* Add SidebarRail if collapsible is 'icon' */}
         {collapsible === 'icon' && <SidebarRail />}
-      </div>
+      </aside>
     )
   }
 )
@@ -302,33 +301,7 @@ const SidebarRail = React.forwardRef<
 SidebarRail.displayName = "SidebarRail"
 
 
-const SidebarInset = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"main">
->(({ className, children, ...props }, ref) => {
-   const { open, isMobile } = useSidebar(); // Get sidebar state
-
-   // Calculate margin/padding based on sidebar state for desktop
-   const desktopMargin = !isMobile && open ? 'ml-[--sidebar-width]' : (!isMobile ? 'ml-[--sidebar-width-icon]' : 'ml-0');
-
-  return (
-    <main
-      ref={ref}
-       className={cn(
-         "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin-left] duration-300 ease-in-out", // Added transition
-         desktopMargin, // Apply dynamic margin
-         // Apply inset styles only if variant is inset (though variant isn't directly passed here)
-         // You might need to adjust this logic if variant needs to influence Inset directly
-         // "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
-         className
-       )}
-      {...props}
-    >
-       {children}
-     </main>
-  )
-})
-SidebarInset.displayName = "SidebarInset"
+// Removed SidebarInset component as layout is handled in RootLayout
 
 
 const SidebarInput = React.forwardRef<
@@ -812,7 +785,7 @@ const sidebarMenuButtonVariants = cva(
    SidebarGroupLabel,
    SidebarHeader,
    SidebarInput,
-   SidebarInset, // Keep Inset export
+   // SidebarInset removed
    SidebarMenu,
    SidebarMenuAction,
    SidebarMenuBadge,
@@ -828,4 +801,3 @@ const sidebarMenuButtonVariants = cva(
    SidebarTrigger,
    useSidebar,
  }
-

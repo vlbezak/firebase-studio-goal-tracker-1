@@ -5,6 +5,7 @@ import './globals.css';
 import {Toaster} from "@/components/ui/toaster";
 import {ThemeProvider} from "@/components/theme-provider"; // Import ThemeProvider
 import AppSidebar from "@/components/SidebarContent"; // Import AppSidebar
+import { SidebarProvider } from "@/components/ui/sidebar"; // Import SidebarProvider
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,19 +28,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning> {/* Add suppressHydrationWarning */}
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Wrap with ThemeProvider */}
+        {/* Wrap with ThemeProvider and SidebarProvider */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* Render AppSidebar directly here */}
-          <AppSidebar />
-          {children}
-          <Toaster />
+          <SidebarProvider> {/* Wrap content with SidebarProvider */}
+             <div className="flex min-h-screen"> {/* Added flex container */}
+                <AppSidebar /> {/* Sidebar remains */}
+                <main className="flex-1 p-4 md:ml-[16rem] lg:ml-[16rem]"> {/* Adjust margin for sidebar width */}
+                   {children} {/* Main content area */}
+                </main>
+             </div>
+            <Toaster />
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>
