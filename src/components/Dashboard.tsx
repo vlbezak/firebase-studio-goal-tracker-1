@@ -8,11 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar"; // Keep if needed elsewhere
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+// Import the actual SeasonDetails component
+import SeasonDetails from "./SeasonDetails"; 
 
+// Mock data (consider moving this to a separate file/API later)
 const seasons = ["2024", "2025"];
 
 const seasonsMatches = {
@@ -34,17 +37,22 @@ const seasonsMatches = {
   ],
 };
 
-const tournaments = {
-  "2024-tournament-1": { id: "2024-tournament-1", name: "Tournament 1" },
-  "2025-tournament-1": { id: "2025-tournament-1", name: "Tournament 1" },
-};
+// Removed tournaments data as it's now within SeasonDetails for this structure
+
 
 const Dashboard = () => {
-  const { setOpen } = useSidebar();
+  // const { setOpen } = useSidebar(); // Uncomment if sidebar interaction is needed here
   const searchParams = useSearchParams();
   const seasonParam = searchParams.get("season");
   const matchParam = searchParams.get("match");
 
+  // Conditionally render based on seasonParam
+  if (seasonParam && seasons.includes(seasonParam)) {
+    // Render the actual SeasonDetails component
+    return <SeasonDetails season={seasonParam} matchId={matchParam} />; 
+  }
+
+  // Original Dashboard View
   return (
     <div className="flex flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Season Performance</h1>
@@ -57,8 +65,10 @@ const Dashboard = () => {
   );
 };
 
+// SeasonDashboard component remains unchanged 
 const SeasonDashboard = ({ season }: { season: string }) => {
-  const matches = seasonsMatches[season] || [];
+  // Type assertion for seasonsMatches keys
+  const matches = (seasonsMatches as Record<string, any[]>)[season] || [];
   const wins = matches.filter((item) => item.result === 1).length;
   const losses = matches.filter((item) => item.result === 0).length;
   const draws = matches.filter((item) => item.result === 0.5).length;
@@ -67,8 +77,10 @@ const SeasonDashboard = ({ season }: { season: string }) => {
     <Card>
       <CardHeader>
         <CardTitle>
+          {/* Link to trigger the detailed view */}
           <Link
             href={`/?season=${season}`}
+            className="hover:underline"
           >
             {season}
           </Link>
@@ -91,7 +103,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
           </div>
         </div>
         <div className="flex flex-col">
-          <CardHeader className="p-0">
+          <CardHeader className="p-0 mb-2"> {/* Added mb-2 for spacing */}
             <CardTitle className="text-md">Last 5 Results</CardTitle>
           </CardHeader>
           <div className="flex items-center justify-around">
@@ -107,10 +119,12 @@ const SeasonDashboard = ({ season }: { season: string }) => {
               }
               return (
                 <Link
+                  // Link to trigger detailed view with match selected
                   href={`/?season=${season}&match=${item.id}`}
                   key={item.id}
-                  className="circle flex items-center justify-center"
-                  style={{ backgroundColor: color, color: "white" }}
+                  className="circle flex items-center justify-center w-8 h-8 rounded-full text-white font-bold text-sm" // Adjusted size and added text styles
+                  style={{ backgroundColor: color }}
+                  title={`Match: ${item.name}, Score: ${item.score}`} // Added tooltip
                 >
                   {letter}
                 </Link>
@@ -122,5 +136,6 @@ const SeasonDashboard = ({ season }: { season: string }) => {
     </Card>
   );
 };
+
 
 export default Dashboard;
