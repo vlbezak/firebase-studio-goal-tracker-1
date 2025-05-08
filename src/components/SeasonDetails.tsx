@@ -79,8 +79,8 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
                     <TooltipTrigger asChild>
                       <StickyNoteIcon className="h-4 w-4 mx-auto text-muted-foreground cursor-pointer" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">{match.notes}</p>
+                    <TooltipContent side="top">
+                      {match.notes}
                     </TooltipContent>
                   </Tooltip>
                 ) : (
@@ -120,8 +120,8 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
                   <TooltipTrigger asChild>
                     <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">{tournament.notes}</p>
+                  <TooltipContent side="top">
+                    {tournament.notes}
                   </TooltipContent>
                 </Tooltip>
             )}
@@ -155,8 +155,8 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
                 <TooltipTrigger asChild>
                   <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">{match.notes}</p>
+                <TooltipContent side="top">
+                  {match.notes}
                 </TooltipContent>
              </Tooltip>
            )}
@@ -218,8 +218,6 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
         const targetElement = tournamentCard || element; // Scroll to tournament card if match is inside one, otherwise scroll to the match (independent or inside table)
         
         targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
-         // If it's a match inside a tournament, also ensure the specific match row is highlighted if it's part of a table.
-        // The highlighting is done by className, so scrolling the card or row into view is primary.
       }
     }
   }, [highlightMatchId, displayItems]); // Rerun if items change, e.g., season navigation

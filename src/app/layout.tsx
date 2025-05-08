@@ -5,6 +5,7 @@ import './globals.css';
 import {Toaster} from "@/components/ui/toaster";
 import {ThemeProvider} from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,9 +36,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>
-             <div className="min-h-screen"> {/* Main container */}
-                <main className="flex-1 p-4"> {/* Main content area */}
+          <TooltipProvider delayDuration={100}> {/* Reduced delay duration */}
+             <div className="min-h-screen flex flex-col">
+                <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                  <div className="container flex h-14 items-center">
+                    <div className="mr-auto flex">
+                      <a className="mr-6 flex items-center space-x-2" href="/">
+                        <span className="font-bold">GoalTrackr</span>
+                      </a>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+                </header>
+                <main className="flex-1 p-4 container max-w-5xl mx-auto"> {/* Main content area */}
                    {children} {/* Main content area */}
                 </main>
              </div>
@@ -48,4 +59,3 @@ export default function RootLayout({
     </html>
   );
 }
-
