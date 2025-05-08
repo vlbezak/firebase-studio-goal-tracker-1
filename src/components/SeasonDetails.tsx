@@ -59,7 +59,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
           const ourTeamName = match.ourTeam || "My Team";
 
           return (
-            <TableRow key={match.id} className={isHighlighted ? "bg-accent" : ""}>
+            <TableRow key={match.id} id={`match-${match.id}`} className={isHighlighted ? "bg-accent text-accent-foreground" : ""}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell>{ourTeamName} vs {match.opponent}</TableCell>
               <TableCell>{match.score}</TableCell>
@@ -181,13 +181,15 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 
   React.useEffect(() => {
     if (highlightMatchId) {
-      const element = document.getElementById(`match-${highlightMatchId}`) || document.getElementById(`tournament-match-${highlightMatchId}`);
+      const element = document.getElementById(`match-${highlightMatchId}`);
       if (element) {
         // Check if the match is inside a tournament card that might not be fully in view
         const tournamentCard = element.closest<HTMLElement>('[id^="tournament-"]');
-        const targetElement = tournamentCard || element; // Scroll to tournament card if match is inside one
+        const targetElement = tournamentCard || element; // Scroll to tournament card if match is inside one, otherwise scroll to the match (independent or inside table)
         
         targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+         // If it's a match inside a tournament, also ensure the specific match row is highlighted if it's part of a table.
+        // The highlighting is done by className, so scrolling the card or row into view is primary.
       }
     }
   }, [highlightMatchId, displayItems]); // Rerun if items change, e.g., season navigation
@@ -213,7 +215,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 
       {displayItems.map((item, index) => {
         if (item.type === 'tournament') {
-          return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches} highlightMatchId={highlightMatchId} />;
+          return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} />;
         }
         if (item.type === 'independent_match') {
           return <IndependentMatchCard key={`match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;

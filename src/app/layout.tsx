@@ -4,8 +4,6 @@ import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import {Toaster} from "@/components/ui/toaster";
 import {ThemeProvider} from "@/components/theme-provider"; // Import ThemeProvider
-import AppSidebar from "@/components/SidebarContent"; // Import AppSidebar
-import { SidebarProvider } from "@/components/ui/sidebar"; // Import SidebarProvider
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,22 +28,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Wrap with ThemeProvider and SidebarProvider */}
+        {/* Wrap with ThemeProvider */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider> {/* Wrap content with SidebarProvider */}
-             <div className="flex min-h-screen"> {/* Added flex container */}
-                <AppSidebar /> {/* Sidebar remains */}
-                <main className="flex-1 p-4 md:ml-[16rem] lg:ml-[16rem]"> {/* Adjust margin for sidebar width */}
+             <div className="min-h-screen"> {/* Main container */}
+                <main className="flex-1 p-4"> {/* Main content area */}
                    {children} {/* Main content area */}
                 </main>
              </div>
             <Toaster />
-          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>
