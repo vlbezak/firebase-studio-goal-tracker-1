@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge"
 import { format, parseISO } from "date-fns";
 import type { ReactNode } from "react";
 import { Trophy, StickyNote } from "lucide-react";
+import type { Match } from "@/types/soccer";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -37,29 +38,26 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   let displayStanding: ReactNode;
   let iconColor = "";
 
-  if (typeof standing === 'string' && isNaN(Number(standing.replace(/[^0-9]/g, '')))) { // Non-numeric string like "Champions" or "1st Place"
+  if (typeof standing === 'string' && isNaN(Number(standing.replace(/[^0-9]/g, '')))) { 
     displayStanding = standing;
-    // Corrected: removed `standing === 1` as it's a string comparison branch.
     if (standing.toLowerCase() === "champions" || standing.toLowerCase() === "1st") iconColor = "text-yellow-500";
-  } else { // Handles numbers and strings like "1st", "2nd" (which parseInt can handle after stripping non-digits)
+  } else { 
     const numericStanding = typeof standing === 'string' ? parseInt(standing.replace(/[^0-9]/g, ''), 10) : standing;
     if (isNaN(numericStanding)) {
-        // If after trying to parse, it's still NaN, and it wasn't caught by the above (e.g. empty string or weird cases)
-        // For robustess, display original string if it was a string.
         displayStanding = typeof standing === 'string' ? standing : String(standing);
     } else {
         switch (numericStanding) {
           case 1:
             displayStanding = "1st";
-            iconColor = "text-yellow-500"; // Gold
+            iconColor = "text-yellow-500"; 
             break;
           case 2:
             displayStanding = "2nd";
-            iconColor = "text-gray-400"; // Silver
+            iconColor = "text-gray-400"; 
             break;
           case 3:
             displayStanding = "3rd";
-            iconColor = "text-orange-500"; // Bronze
+            iconColor = "text-orange-500"; 
             break;
           default:
             displayStanding = `${numericStanding}th`;
@@ -67,7 +65,7 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
         }
     }
   }
-  // Fallback if displayStanding is not set (e.g. numericStanding was NaN and it was a number type initially)
+  
   if (!displayStanding) {
     displayStanding = String(standing);
   }
@@ -83,3 +81,63 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
 
 // Corrected export: export the imported 'StickyNote' as 'StickyNoteIcon'
 export { StickyNote as StickyNoteIcon };
+
+
+export interface ScoreParts {
+  ourGoals: number;
+  opponentGoals: number;
+}
+
+export function parseScore(score: string): ScoreParts | null {
+  if (!score || !score.includes('-')) {
+    // console.warn(`Invalid score format: ${score}`); // Silencing warning for potentially empty/TBD scores
+    return null; 
+  }
+  const parts = score.split('-');
+  if (parts.length !== 2) {
+    // console.warn(`Invalid score format: ${score}`);
+    return null;
+  }
+  const ourGoals = parseInt(parts[0], 10);
+  const opponentGoals = parseInt(parts[1], 10);
+
+  if (isNaN(ourGoals) || isNaN(opponentGoals)) {
+    // console.warn(`Non-numeric score parts in: ${score}`);
+    return null;
+  }
+  return { ourGoals, opponentGoals };
+}
+
+export interface SeasonStats {
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  matchesPlayed: number;
+}
+
+export function calculateSeasonStats(matches: Match[]): SeasonStats {
+  const stats: SeasonStats = {
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    matchesPlayed: matches.length,
+  };
+
+  matches.forEach(match => {
+    if (match.result === 1) stats.wins++;
+    else if (match.result === 0.5) stats.draws++;
+    else if (match.result === 0) stats.losses++;
+
+    const scoreParts = parseScore(match.score);
+    if (scoreParts) {
+      stats.goalsFor += scoreParts.ourGoals;
+      stats.goalsAgainst += scoreParts.opponentGoals;
+    }
+  });
+
+  return stats;
+}

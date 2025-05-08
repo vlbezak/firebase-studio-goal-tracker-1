@@ -20,9 +20,10 @@ import {
 import Link from "next/link";
 import { MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS } from "@/data/mockData";
 import type { Match, Tournament, SeasonDisplayItem } from "@/types/soccer";
-import { formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
+import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Goal } from "lucide-react";
 
 
 interface SeasonDetailsProps {
@@ -60,7 +61,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
           const ourTeamName = match.ourTeam || "My Team";
 
           return (
-            <TableRow key={match.id} id={`match-${match.id}`} className={isHighlighted ? "bg-accent text-accent-foreground" : ""}>
+            <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell>{ourTeamName} vs {match.opponent}</TableCell>
               <TableCell>{match.score}</TableCell>
@@ -79,7 +80,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
                     <TooltipTrigger asChild>
                       <StickyNoteIcon className="h-4 w-4 mx-auto text-muted-foreground cursor-pointer" />
                     </TooltipTrigger>
-                    <TooltipContent side="top">
+                    <TooltipContent side="top" className="max-w-xs break-words">
                       {match.notes}
                     </TooltipContent>
                   </Tooltip>
@@ -120,7 +121,7 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
                   <TooltipTrigger asChild>
                     <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
                   </TooltipTrigger>
-                  <TooltipContent side="top">
+                  <TooltipContent side="top" className="max-w-xs break-words">
                     {tournament.notes}
                   </TooltipContent>
                 </Tooltip>
@@ -128,7 +129,7 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0"> {/* Remove default padding for table */}
+      <CardContent className="p-0"> 
         <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} />
       </CardContent>
     </Card>
@@ -155,7 +156,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
                 <TooltipTrigger asChild>
                   <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
                 </TooltipTrigger>
-                <TooltipContent side="top">
+                <TooltipContent side="top" className="max-w-xs break-words">
                   {match.notes}
                 </TooltipContent>
              </Tooltip>
@@ -183,6 +184,8 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
 const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId }) => {
   const matchesForSeason: Match[] = MOCK_MATCHES_BY_SEASON[season] || [];
   const tournamentsForSeason: Tournament[] = Object.values(MOCK_TOURNAMENTS).filter(t => t.season === season);
+  const { wins, draws, losses, goalsFor, goalsAgainst, matchesPlayed } = calculateSeasonStats(matchesForSeason);
+
 
   const displayItems: SeasonDisplayItem[] = [];
 
@@ -206,21 +209,19 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
     }
   });
 
-  // Sort all items by date, most recent first
   displayItems.sort((a, b) => new Date(b.dateToSort).getTime() - new Date(a.dateToSort).getTime());
 
   React.useEffect(() => {
     if (highlightMatchId) {
       const element = document.getElementById(`match-${highlightMatchId}`);
       if (element) {
-        // Check if the match is inside a tournament card that might not be fully in view
         const tournamentCard = element.closest<HTMLElement>('[id^="tournament-"]');
-        const targetElement = tournamentCard || element; // Scroll to tournament card if match is inside one, otherwise scroll to the match (independent or inside table)
+        const targetElement = tournamentCard || element; 
         
         targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [highlightMatchId, displayItems]); // Rerun if items change, e.g., season navigation
+  }, [highlightMatchId, displayItems]);
 
   return (
     <div className="p-4 flex flex-col gap-4">
@@ -232,6 +233,30 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
             </Link>
         </Button>
       </div>
+
+      {/* Season Summary Stats Card */}
+      {matchesPlayed > 0 && (
+        <Card className="mb-6 shadow-md">
+          <CardHeader className="pb-3 pt-4">
+            <CardTitle className="text-xl">Season Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4">
+            <div className="flex items-center gap-2">
+                <span className="font-semibold">Record:</span>
+                <span>{wins} W - {draws} D - {losses} L</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <Goal className="w-4 h-4 text-muted-foreground" />
+                <span className="font-semibold">Goals:</span>
+                <span>{goalsFor} : {goalsAgainst}</span>
+            </div>
+             <div className="flex items-center gap-2">
+                <span className="font-semibold">Matches Played:</span>
+                <span>{matchesPlayed}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {displayItems.length === 0 && (
            <Card className="shadow-md">

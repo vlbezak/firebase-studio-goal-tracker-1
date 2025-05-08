@@ -14,6 +14,8 @@ import { useSearchParams } from "next/navigation";
 import SeasonDetails from "./SeasonDetails";
 import { MOCK_SEASONS, MOCK_MATCHES_BY_SEASON } from "@/data/mockData";
 import type { Match } from "@/types/soccer";
+import { calculateSeasonStats } from "@/lib/utils";
+import { Goal } from "lucide-react"; // Import Goal icon
 
 const Dashboard = () => {
   const searchParams = useSearchParams();
@@ -40,9 +42,7 @@ const Dashboard = () => {
 
 const SeasonDashboard = ({ season }: { season: string }) => {
   const matches: Match[] = MOCK_MATCHES_BY_SEASON[season] || [];
-  const wins = matches.filter((item) => item.result === 1).length;
-  const losses = matches.filter((item) => item.result === 0).length;
-  const draws = matches.filter((item) => item.result === 0.5).length;
+  const { wins, draws, losses, goalsFor, goalsAgainst } = calculateSeasonStats(matches);
 
   // Sort matches by date descending to get the last 5
   const last5Matches = [...matches]
@@ -62,8 +62,8 @@ const SeasonDashboard = ({ season }: { season: string }) => {
         </CardTitle>
         <CardDescription>Overall Performance</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col justify-center">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col justify-center space-y-1">
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-full" style={{backgroundColor: "var(--win-color)"}} />
             <span>Wins: {wins}</span>
@@ -75,6 +75,10 @@ const SeasonDashboard = ({ season }: { season: string }) => {
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 rounded-full" style={{backgroundColor: "var(--loss-color)"}} />
             <span>Losses: {losses}</span>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Goal className="w-4 h-4 text-muted-foreground" />
+            <span>Goals: {goalsFor} : {goalsAgainst}</span>
           </div>
         </div>
         <div className="flex flex-col">
