@@ -48,7 +48,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
       <TableHeader>
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
-          <TableHead>Opponent</TableHead>
+          <TableHead>Match</TableHead>
           <TableHead className="w-[80px]">Score</TableHead>
           <TableHead className="w-[80px]">Result</TableHead>
           <TableHead className="w-[50px] text-center">Notes</TableHead>
@@ -58,12 +58,12 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         {matches.map((match) => {
           const { color, letter, label } = getResultStyle(match.result);
           const isHighlighted = match.id === highlightMatchId;
-          const ourTeamName = match.ourTeam || "My Team";
+          
 
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
-              <TableCell>{ourTeamName} vs {match.opponent}</TableCell>
+              <TableCell>{match.name}</TableCell>
               <TableCell>{match.score}</TableCell>
               <TableCell>
                 <span
@@ -139,14 +139,14 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
 const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null }> = ({ match, highlightMatchId }) => {
   const { color, letter, label } = getResultStyle(match.result);
   const isHighlighted = match.id === highlightMatchId;
-  const ourTeamName = match.ourTeam || "My Team";
+  
 
   return (
     <Card className={cn("mb-6 shadow-lg", isHighlighted ? "ring-2 ring-primary" : "")} id={`match-${match.id}`}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">{match.name || `${ourTeamName} vs ${match.opponent}`}</CardTitle>
+            <CardTitle className="text-lg">{match.name}</CardTitle>
             <CardDescription className="text-sm">
               {formatDate(match.date)} {match.place ? `| ${match.place}` : ""}
             </CardDescription>
@@ -165,7 +165,6 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
         <div className="text-base">
-          <span>{ourTeamName} vs {match.opponent}</span>
           <span className="font-bold ml-2">{match.score}</span>
         </div>
         <span
@@ -280,3 +279,4 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 };
 
 export default SeasonDetails;
+

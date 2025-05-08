@@ -2,7 +2,7 @@
 export interface Match {
   id: string;
   date: string; // YYYY-MM-DD
-  name: string; // e.g., "Match vs Team X", "Friendly: Team Y"
+  name: string; // e.g., "Group Stage: Our Team vs Opponent Team", "Friendly: Team Y vs Team Z"
   opponent: string;
   score: string; // e.g., "3-2" (OurTeam-Opponent)
   result: number; // 1 for win, 0.5 for draw, 0 for loss
@@ -27,3 +27,4 @@ export interface Tournament {
 export type SeasonDisplayItem =
   | { type: 'tournament'; data: Tournament; matches: Match[]; dateToSort: string; }
   | { type: 'independent_match'; data: Match; dateToSort: string; };
+
