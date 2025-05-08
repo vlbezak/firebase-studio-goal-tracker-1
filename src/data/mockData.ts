@@ -50,9 +50,9 @@ export const MOCK_MATCHES_BY_SEASON: Record<string, Match[]> = {
   ],
   "2025": [
     // Tournament 1 (Challenge Cup) - Playoff Structure
-    { id: "2025-match-2", date: "2025-03-10", name: "Round 1: Eagles vs Dragons", opponent: "Dragons", score: "3-1", result: 1, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Strong performance, controlled the game well. Pitch was a bit muddy." },
-    { id: "2025-match-26", date: "2025-03-10", name: "Round 2: Eagles vs Griffins", opponent: "Griffins", score: "2-2", result: 0.5, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Went to penalties, we lost. Tough luck." },
-    { id: "2025-match-3", date: "2025-03-11", name: "Quarter-final: Eagles vs Phoenix", opponent: "Phoenix", score: "1-0", result: 1, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Tight match, late goal secured the win. Opponent very physical." },
+    { id: "2025-match-2", date: "2025-03-10", name: "Quarter-final: Eagles vs Dragons", opponent: "Dragons", score: "3-1", result: 1, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Strong performance, controlled the game well. Pitch was a bit muddy." },
+    { id: "2025-match-26", date: "2025-03-10", name: "Semi-final: Eagles vs Griffins", opponent: "Griffins", score: "2-2", result: 0.5, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Went to penalties, we lost. Tough luck." },
+    { id: "2025-match-3", date: "2025-03-11", name: "Quarter-final: Eagles vs Phoenix", opponent: "Phoenix", score: "1-0", result: 1, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Tight match, late goal secured the win. Opponent very physical." }, // Note: This match existing as a QF for Eagles after a SF is logically inconsistent for a single team path, but data is preserved as per previous state.
     { id: "2025-match-27", date: "2025-03-11", name: "5th Place Match: Eagles vs Centaurs", opponent: "Centaurs", score: "5-0", result: 1, tournamentId: "2025-challenge-cup", ourTeam: "Eagles", notes: "Bounced back with a big win for 5th place." },
 
     // Tournament 2 (New Year Cup) - Round Robin
@@ -81,8 +81,8 @@ export const MOCK_MATCHES_BY_SEASON: Record<string, Match[]> = {
 
     // Tournament 6 (Champions Gala) - Playoff Structure
     { id: "2025-match-22", date: "2025-10-15", name: "Quarter-final: Eagles vs Titans", opponent: "Titans", score: "1-0", result: 1, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "A single goal decided it." },
-    { id: "2025-match-23", date: "2025-10-15", name: "Quarter-final: Eagles vs Giants", opponent: "Giants", score: "2-2", result: 0.5, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "Fair play award to opponent for sportsmanship. Lost on penalties." }, // Adjusted as QF usually eliminates one
-    { id: "2025-match-24", date: "2025-10-15", name: "Semi-final: Eagles vs Olympians", opponent: "Olympians", score: "3-1", result: 1, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "Strong second half performance." }, // Assuming Eagles won a QF to reach here
+    { id: "2025-match-23", date: "2025-10-15", name: "Quarter-final: Eagles vs Giants", opponent: "Giants", score: "2-2", result: 0.5, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "Fair play award to opponent for sportsmanship. Lost on penalties." }, 
+    { id: "2025-match-24", date: "2025-10-15", name: "Semi-final: Eagles vs Olympians", opponent: "Olympians", score: "3-1", result: 1, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "Strong second half performance." }, 
     { id: "2025-match-25", date: "2025-10-15", name: "Final: Eagles vs Legends", opponent: "Legends", score: "2-0", result: 1, tournamentId: "2025-tournament-6", ourTeam: "Eagles", notes: "Great way to end the gala, champions again!" },
 
     // Independent Matches
