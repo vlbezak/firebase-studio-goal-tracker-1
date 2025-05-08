@@ -22,6 +22,7 @@ import { MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS } from "@/data/mockData";
 import type { Match, Tournament, SeasonDisplayItem } from "@/types/soccer";
 import { formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 interface SeasonDetailsProps {
@@ -73,7 +74,18 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                {match.notes ? <StickyNoteIcon className="h-4 w-4 mx-auto text-muted-foreground" title={match.notes} /> : "-"}
+                {match.notes ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <StickyNoteIcon className="h-4 w-4 mx-auto text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{match.notes}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  "-"
+                )}
               </TableCell>
             </TableRow>
           );
@@ -103,7 +115,16 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
                 {getFinalStandingDisplay(tournament.finalStanding)}
               </div>
             )}
-            {tournament.notes && <StickyNoteIcon className="h-5 w-5 text-muted-foreground" title={tournament.notes} />}
+            {tournament.notes && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{tournament.notes}</p>
+                  </TooltipContent>
+                </Tooltip>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -129,7 +150,16 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
               {formatDate(match.date)} {match.place ? `| ${match.place}` : ""}
             </CardDescription>
           </div>
-           {match.notes && <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" title={match.notes}/>}
+           {match.notes && (
+             <Tooltip>
+                <TooltipTrigger asChild>
+                  <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">{match.notes}</p>
+                </TooltipContent>
+             </Tooltip>
+           )}
         </div>
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
