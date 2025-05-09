@@ -41,9 +41,9 @@ export default function RootLayout({
             <AuthProvider>
               <div className="min-h-screen flex flex-col">
                 <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                  <div className="container flex h-14 items-center justify-between"> {/* Changed to justify-between */}
+                  <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
                     {/* Left side: Title */}
-                    <a className="flex items-center space-x-2" href="/"> {/* Removed wrapper div and mr-6 */}
+                    <a className="flex items-center space-x-2" href="/">
                       <span className="font-bold">MTE Goal Tracker</span>
                     </a>
                     {/* Right side: Controls */}
