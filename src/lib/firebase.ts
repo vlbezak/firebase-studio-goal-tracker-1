@@ -5,30 +5,62 @@ import { getAnalytics, isSupported } from "firebase/analytics"; // Import isSupp
 
 let rawAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
 let cleanAuthDomain = rawAuthDomain;
+let specificWarning = "";
 
-if (!rawAuthDomain) {
+if (!rawAuthDomain || rawAuthDomain.trim() === "") {
   console.error(
     "CRITICAL Firebase Config Error: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is not set or is empty in your environment variables. " +
     "Firebase authentication will likely fail with 'auth/configuration-not-found'. " +
     "Please set it to your Firebase project's auth domain (e.g., your-project-id.firebaseapp.com) in your .env file."
   );
+  // cleanAuthDomain will remain undefined or empty, leading to Firebase init errors, which is indicative.
 } else {
-  // Check for the specific markdown-like format: `[domain](anything)`
-  // This pattern tries to extract the `domain.com` part from `[domain.com](...)`
-  const markdownLinkMatch = rawAuthDomain.match(/^\[([^\]]+)\]\(.*\)$/);
+  let tempAuthDomain = rawAuthDomain.trim();
+
+  // 1. Handle specific markdown link format: `[domain](anything)`
+  const markdownLinkMatch = tempAuthDomain.match(/^\[([^\]]+)\]\(.*\)$/);
   if (markdownLinkMatch && markdownLinkMatch[1]) {
-    cleanAuthDomain = markdownLinkMatch[1]; // Extract the content within the square brackets
+    tempAuthDomain = markdownLinkMatch[1].trim();
+    specificWarning = `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") appeared to be a markdown link and was sanitized to "${tempAuthDomain}".`;
+  }
+
+  // 2. Attempt to treat as a URL and extract hostname
+  // This helps strip protocols (http/https), ports (usually), paths, query params, fragments.
+  try {
+    // Add a dummy protocol if none is present to help URL constructor parse it as a host-based URL
+    // Ensure it doesn't already have one before prefixing.
+    const urlInput = tempAuthDomain.includes('://') ? tempAuthDomain : `https://${tempAuthDomain}`;
+    const parsedUrl = new URL(urlInput);
+    // Check if hostname is valid and different from the (potentially markdown-cleaned) tempAuthDomain
+    if (parsedUrl.hostname && parsedUrl.hostname !== tempAuthDomain) {
+       // Only set if markdown warning wasn't already set OR if this parsing provides a "more clean" domain
+      if (!specificWarning || (specificWarning && tempAuthDomain !== parsedUrl.hostname)) {
+         specificWarning = `NOTE: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") was processed to use its hostname part "${parsedUrl.hostname}".`;
+      }
+      tempAuthDomain = parsedUrl.hostname;
+    } else if (parsedUrl.hostname && parsedUrl.hostname === tempAuthDomain) {
+      // Domain was already clean or markdown sanitization produced a clean hostname
+    }
+  } catch (e) {
+    // If it's not a valid URL (e.g., just "project-id.firebaseapp.com"), URL constructor will throw.
+    // In this case, tempAuthDomain (potentially after markdown cleaning) is likely the intended hostname.
+    // This catch block means the input wasn't a full URL, which is often fine for hostnames.
+  }
+
+  cleanAuthDomain = tempAuthDomain;
+
+  if (specificWarning) {
+    console.warn(specificWarning + " Please ensure this value is your Firebase project's correct Auth Domain (e.g., your-project-id.firebaseapp.com).");
+  }
+
+  // General check for remaining suspicious characters if no specific warning was triggered by markdown or URL parsing.
+  // Or if the cleaned domain still looks off.
+  if (cleanAuthDomain.includes("[") || cleanAuthDomain.includes("(") || cleanAuthDomain.includes("]") || cleanAuthDomain.includes(" ") || cleanAuthDomain.includes("/") || (cleanAuthDomain.includes(":") && !cleanAuthDomain.match(/^\w+:\/\//) && !cleanAuthDomain.match(/^localhost:\d+$/) ) ) {
+    // The colon check is tricky; allow localhost with port but not other colons unless part of a protocol (which should have been stripped).
     console.warn(
-      `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN environment variable ("${rawAuthDomain}") appears to be in a markdown link format. ` +
-      `It has been programmatically sanitized to "${cleanAuthDomain}" for Firebase initialization. ` +
-      `To prevent potential issues and to ensure correct Firebase operation, please update your .env file to contain ONLY the clean hostname. For example: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${cleanAuthDomain}`
-    );
-  } else if (rawAuthDomain.includes("[") || rawAuthDomain.includes("(") || rawAuthDomain.includes("]")) {
-    // General warning if it contains characters typical of markdown links but doesn't match the exact pattern
-    console.warn(
-        `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") may be malformed or contain unexpected characters. ` +
+        `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") resulted in a cleaned domain "${cleanAuthDomain}" that might still be malformed. ` +
         `Firebase expects a clean hostname (e.g., your-project-id.firebaseapp.com). ` +
-        `If authentication fails with 'auth/configuration-not-found' or URL errors, please ensure this value in your .env file is a plain hostname.`
+        `If authentication fails with 'auth/configuration-not-found' or 'auth/unauthorized-domain', please carefully verify this value in your .env file.`
     );
   }
 }
@@ -45,12 +77,18 @@ const firebaseConfig = {
 };
 
 // For debugging, you can uncomment this to see what config Firebase is trying to use:
-// console.log("Attempting to initialize Firebase with config:", firebaseConfig);
+// console.log("Attempting to initialize Firebase with config:", JSON.stringify(firebaseConfig, null, 2));
 
 // Initialize Firebase
 let app;
 if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
+  try {
+    app = initializeApp(firebaseConfig);
+  } catch (error) {
+    console.error("CRITICAL Firebase Initialization Error:", error);
+    console.error("Firebase config used:", JSON.stringify(firebaseConfig, null, 2));
+    // Handle or throw error appropriately if app cannot be initialized
+  }
 } else {
   app = getApp(); // Use getApp() if already initialized
 }
@@ -59,7 +97,7 @@ const auth = getAuth(app);
 
 // Initialize Analytics only on the client side
 let analytics;
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && app) { // check app is initialized
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
@@ -70,3 +108,4 @@ if (typeof window !== 'undefined') {
 }
 
 export { app, auth, analytics };
+
