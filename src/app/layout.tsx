@@ -41,12 +41,12 @@ export default function RootLayout({
             <AuthProvider>
               <div className="min-h-screen flex flex-col">
                 <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                  <div className="container flex h-14 items-center">
-                    <div className="mr-auto flex">
-                      <a className="mr-6 flex items-center space-x-2" href="/">
-                        <span className="font-bold">MTE Goal Tracker</span>
-                      </a>
-                    </div>
+                  <div className="container flex h-14 items-center justify-between"> {/* Changed to justify-between */}
+                    {/* Left side: Title */}
+                    <a className="flex items-center space-x-2" href="/"> {/* Removed wrapper div and mr-6 */}
+                      <span className="font-bold">MTE Goal Tracker</span>
+                    </a>
+                    {/* Right side: Controls */}
                     <div className="flex items-center gap-2">
                       <ThemeToggle />
                       <AuthButton />
