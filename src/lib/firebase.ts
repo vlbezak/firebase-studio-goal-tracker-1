@@ -6,7 +6,14 @@ import { getAnalytics, isSupported } from "firebase/analytics"; // Import isSupp
 let rawAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
 let cleanAuthDomain = rawAuthDomain;
 
-if (rawAuthDomain && rawAuthDomain.startsWith('[') && rawAuthDomain.includes('](')) {
+if (!rawAuthDomain) { // Check if it's missing or empty first
+  console.error(
+    `CRITICAL Firebase Config Error: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is not set or is empty in your environment variables. ` +
+    `Firebase authentication will fail with 'auth/configuration-not-found'. ` +
+    `Please set it to your Firebase project's auth domain (e.g., your-project-id.firebaseapp.com) in your .env file.`
+  );
+  // cleanAuthDomain will remain undefined or empty, leading to the Firebase error
+} else if (rawAuthDomain.startsWith('[') && rawAuthDomain.includes('](')) {
   const match = rawAuthDomain.match(/^\[([^\]]+)\]\(http[s]?:\/\/\1\/?\)$/); // More specific match for "DOMAIN](PROTOCOL//DOMAIN/)"
   if (match && match[1]) {
     cleanAuthDomain = match[1];
@@ -25,7 +32,7 @@ if (rawAuthDomain && rawAuthDomain.startsWith('[') && rawAuthDomain.includes('](
         );
     } else {
         console.error(
-          `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") appears malformed but could not be reliably sanitized. ` +
+          `ERROR: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") appears malformed and could not be reliably sanitized. ` +
           `Firebase auth may fail. Please ensure it's a clean hostname in your .env file.`
         );
     }
