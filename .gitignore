@@ -65,6 +65,6 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
-# Firebase
+# Firebase #
 firebase-debug.log
 *.firebase.*.log
