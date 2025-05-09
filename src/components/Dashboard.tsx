@@ -50,7 +50,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
     .slice(0, 5);
 
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md hover:bg-muted/50 transition-colors duration-150 cursor-pointer">
       <CardHeader>
         <CardTitle>
           <Link
