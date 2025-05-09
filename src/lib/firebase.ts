@@ -1,41 +1,35 @@
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics"; // Import isSupported
 
-// Attempt to sanitize the authDomain if it matches the malformed pattern from the error
 let rawAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
 let cleanAuthDomain = rawAuthDomain;
 
-if (!rawAuthDomain) { // Check if it's missing or empty first
+if (!rawAuthDomain) {
   console.error(
-    `CRITICAL Firebase Config Error: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is not set or is empty in your environment variables. ` +
-    `Firebase authentication will fail with 'auth/configuration-not-found'. ` +
-    `Please set it to your Firebase project's auth domain (e.g., your-project-id.firebaseapp.com) in your .env file.`
+    "CRITICAL Firebase Config Error: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is not set or is empty in your environment variables. " +
+    "Firebase authentication will likely fail with 'auth/configuration-not-found'. " +
+    "Please set it to your Firebase project's auth domain (e.g., your-project-id.firebaseapp.com) in your .env file."
   );
-  // cleanAuthDomain will remain undefined or empty, leading to the Firebase error
-} else if (rawAuthDomain.startsWith('[') && rawAuthDomain.includes('](')) {
-  const match = rawAuthDomain.match(/^\[([^\]]+)\]\(http[s]?:\/\/\1\/?\)$/); // More specific match for "DOMAIN](PROTOCOL//DOMAIN/)"
-  if (match && match[1]) {
-    cleanAuthDomain = match[1];
+} else {
+  // Check for the specific markdown-like format: `[domain](anything)`
+  // This pattern tries to extract the `domain.com` part from `[domain.com](...)`
+  const markdownLinkMatch = rawAuthDomain.match(/^\[([^\]]+)\]\(.*\)$/);
+  if (markdownLinkMatch && markdownLinkMatch[1]) {
+    cleanAuthDomain = markdownLinkMatch[1]; // Extract the content within the square brackets
     console.warn(
-      `Sanitized NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN from "${rawAuthDomain}" to "${cleanAuthDomain}". ` +
-      `Please ensure NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in your .env file is set to a clean hostname (e.g., your-project-id.firebaseapp.com).`
+      `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN environment variable ("${rawAuthDomain}") appears to be in a markdown link format. ` +
+      `It has been programmatically sanitized to "${cleanAuthDomain}" for Firebase initialization. ` +
+      `To prevent potential issues and to ensure correct Firebase operation, please update your .env file to contain ONLY the clean hostname. For example: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${cleanAuthDomain}`
     );
-  } else {
-    // Fallback for a slightly different pattern observed in the error log if the above doesn't match perfectly
-    const genericMatch = rawAuthDomain.match(/^\[([^\]]+)\]\(.+\)$/);
-    if (genericMatch && genericMatch[1]) {
-        cleanAuthDomain = genericMatch[1];
-        console.warn(
-          `Sanitized NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN from "${rawAuthDomain}" to "${cleanAuthDomain}" using a generic pattern. ` +
-          `Please ensure NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in your .env file is set to a clean hostname (e.g., your-project-id.firebaseapp.com).`
-        );
-    } else {
-        console.error(
-          `ERROR: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") appears malformed and could not be reliably sanitized. ` +
-          `Firebase auth may fail. Please ensure it's a clean hostname in your .env file.`
-        );
-    }
+  } else if (rawAuthDomain.includes("[") || rawAuthDomain.includes("(") || rawAuthDomain.includes("]")) {
+    // General warning if it contains characters typical of markdown links but doesn't match the exact pattern
+    console.warn(
+        `WARNING: Your NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ("${rawAuthDomain}") may be malformed or contain unexpected characters. ` +
+        `Firebase expects a clean hostname (e.g., your-project-id.firebaseapp.com). ` +
+        `If authentication fails with 'auth/configuration-not-found' or URL errors, please ensure this value in your .env file is a plain hostname.`
+    );
   }
 }
 
@@ -49,6 +43,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+// For debugging, you can uncomment this to see what config Firebase is trying to use:
+// console.log("Attempting to initialize Firebase with config:", firebaseConfig);
 
 // Initialize Firebase
 let app;
