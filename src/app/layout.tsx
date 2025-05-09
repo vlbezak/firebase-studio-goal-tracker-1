@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthButton } from '@/components/AuthButton'; // <--- Added import
+import { AuthButton } from '@/components/AuthButton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AuthProvider } from '@/context/AuthContext';
 
@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'GoalTrackr',
+  title: 'MTE Goal Tracker',
   description: 'Track your soccer team performance',
 };
 
@@ -44,12 +44,12 @@ export default function RootLayout({
                   <div className="container flex h-14 items-center">
                     <div className="mr-auto flex">
                       <a className="mr-6 flex items-center space-x-2" href="/">
-                        <span className="font-bold">GoalTrackr</span>
+                        <span className="font-bold">MTE Goal Tracker</span>
                       </a>
                     </div>
-                    <div className="flex items-center gap-2"> {/* <--- Added a div to group ThemeToggle and AuthButton */}
+                    <div className="flex items-center gap-2">
                       <ThemeToggle />
-                      <AuthButton /> {/* <--- AuthButton added here */}
+                      <AuthButton />
                     </div>
                   </div>
                 </header>
