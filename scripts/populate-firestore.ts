@@ -1,14 +1,46 @@
-import 'dotenv/config'; // Load .env file, ensure this is at the very top for mockData.ts too if needed.
-// src/data/mockData.ts
-import type { Match, Tournament, Team } from '@/types/soccer';
-import fs from 'fs'; // Added for reading CSV files
-import path from 'path'; // Added for path joining
+import 'dotenv/config'; // Load .env file
+// scripts/populate-firestore.ts
+import { db } from '../src/lib/firebase'; // Adjust path as necessary
+import { collection, writeBatch, doc } from 'firebase/firestore'; // Removed Timestamp as it's not used now
+import fs from 'fs';
+import path from 'path';
 
-// --- Helper functions and interfaces ---
+// ----- Start: Copied/adapted from src/data/mockData.ts -----
 const OUR_TEAM_ID = "mte";
 const OUR_TEAM_NAME = "MTE";
 
-// --- Helper functions (Copied from populate-firestore.ts for consistency) ---
+interface Team {
+  id: string;
+  name: string;
+}
+
+interface Match {
+  id: string;
+  date: string; 
+  name: string;
+  ourTeamId: string;
+  opponentTeamId: string;
+  ourScore: number;
+  opponentScore: number;
+  score: string;
+  result: number; 
+  place?: string;
+  notes?: string;
+  tournamentId?: string;
+  season: string; 
+}
+
+interface Tournament {
+  id: string;
+  name: string;
+  season: string;
+  startDate: string; 
+  endDate: string;   
+  place?: string;
+  finalStanding?: string | number;
+  notes?: string;
+}
+
 function parseCsvDate(dateStr: string): string {
     if (!dateStr || !/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(dateStr.trim())) return '';
     const parts = dateStr.trim().split('.');
@@ -211,15 +243,18 @@ function processSeasonCsv(
                     if (result === 1) result = 0;
                     else if (result === 0) result = 1;
                 } else {
+                    console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
                     continue;
                 }
             } else if (teamsStr) {
                 opponentNameForMatch = normalizeTeamName(teamsStr);
             } else {
+                console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
                 continue; 
             }
             
             if (!opponentNameForMatch) {
+                 console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
                 continue;
             }
             
@@ -233,6 +268,7 @@ function processSeasonCsv(
             }
 
             if (isNaN(ourScore) || isNaN(opponentScore) || result === -1) {
+                console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
                 continue;
             }
 
@@ -336,59 +372,86 @@ function processSeasonCsv(
     return { matches: seasonMatches, tournaments: seasonTournaments, opponentTeamNames: uniqueOpponentNamesThisSeason };
 }
 
-// --- Data Loading and Processing ---
-const opponentTeamIdsGlobalMap = new Map<string, string>();
-let combinedMatches: Match[] = [];
-let combinedTournaments: Record<string, Tournament> = {};
-const combinedOpponentNames = new Set<string>();
+// --- Main script logic ---
+async function populateFirestore() {
+    const opponentTeamIdsGlobalMap = new Map<string, string>();
+    let allMatches: Match[] = [];
+    let allTournaments: Record<string, Tournament> = {};
+    const allOpponentNames = new Set<string>();
 
-const seasonsToLoad = [
-    { year: "2023/2024", filePath: "../../data/csv/2023-2024.csv" }, // Path relative to src/data/
-    { year: "2024/2025", filePath: "../../data/csv/2024-2025.csv" }, // Path relative to src/data/
-];
+    const seasons = [
+        { year: "2023/2024", filePath: "../data/csv/2023-2024.csv" },
+        { year: "2024/2025", filePath: "../data/csv/2024-2025.csv" },
+    ];
 
-for (const season of seasonsToLoad) {
-    const csvPath = path.join(__dirname, season.filePath);
+    for (const season of seasons) {
+        const csvPath = path.join(__dirname, season.filePath);
+        try {
+            const csvData = fs.readFileSync(csvPath, 'utf-8');
+            const processed = processSeasonCsv(csvData, season.year, OUR_TEAM_ID, OUR_TEAM_NAME, opponentTeamIdsGlobalMap);
+            
+            allMatches = allMatches.concat(processed.matches);
+            allTournaments = { ...allTournaments, ...processed.tournaments };
+            processed.opponentTeamNames.forEach(name => allOpponentNames.add(name));
+            console.log(`Processed data for season ${season.year}`);
+        } catch (error) {
+            console.error(`Error reading or processing CSV for ${season.year}:`, error);
+            return; // Stop if one file fails
+        }
+    }
+
+    // Prepare teams
+    const teamsMap = new Map<string, Team>();
+    teamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
+    allOpponentNames.forEach(normalizedName => {
+        const id = opponentTeamIdsGlobalMap.get(normalizedName.toLowerCase()) || generateTeamId(normalizedName);
+        if (!teamsMap.has(id)) {
+            teamsMap.set(id, { id, name: normalizedName });
+        }
+    });
+    const finalTeams: Team[] = Array.from(teamsMap.values());
+
+    // Write to Firestore using batch writes
+    const batch = writeBatch(db);
+
+    // Add Teams
+    const teamsCollection = collection(db, 'teams');
+    finalTeams.forEach(team => {
+        const teamRef = doc(teamsCollection, team.id);
+        batch.set(teamRef, team);
+    });
+    console.log(`Preparing to write ${finalTeams.length} teams...`);
+
+    // Add Tournaments
+    const tournamentsCollection = collection(db, 'tournaments');
+    Object.values(allTournaments).forEach(t => {
+        const tournamentRef = doc(tournamentsCollection, t.id);
+        const tournamentData: any = { ...t };
+        if (tournamentData.notes === undefined) delete tournamentData.notes;
+        if (tournamentData.place === undefined) delete tournamentData.place;
+        if (tournamentData.finalStanding === undefined) delete tournamentData.finalStanding;
+        batch.set(tournamentRef, tournamentData);
+    });
+    console.log(`Preparing to write ${Object.values(allTournaments).length} tournaments...`);
+
+    // Add Matches
+    const matchesCollection = collection(db, 'matches');
+    allMatches.forEach(m => {
+        const matchRef = doc(matchesCollection, m.id);
+        const matchData: any = { ...m };
+        if (matchData.notes === undefined) delete matchData.notes;
+        if (matchData.place === undefined) delete matchData.place;
+        if (matchData.tournamentId === undefined) delete matchData.tournamentId;
+        batch.set(matchRef, matchData);
+    });
+    console.log(`Preparing to write ${allMatches.length} matches...`);
+
     try {
-        const csvData = fs.readFileSync(csvPath, 'utf-8');
-        const processed = processSeasonCsv(csvData, season.year, OUR_TEAM_ID, OUR_TEAM_NAME, opponentTeamIdsGlobalMap);
-        
-        combinedMatches = combinedMatches.concat(processed.matches);
-        combinedTournaments = { ...combinedTournaments, ...processed.tournaments };
-        processed.opponentTeamNames.forEach(name => combinedOpponentNames.add(name));
+        await batch.commit();
+        console.log('Successfully populated Firestore with teams, tournaments, and matches!');
     } catch (error) {
-        console.error(`Error reading or processing CSV for ${season.year} in mockData.ts:`, error);
+        console.error('Error writing batch to Firestore:', error);
     }
 }
 
-// --- Export Data ---
-export const MOCK_SEASONS: string[] = seasonsToLoad.map(s => s.year);
-
-export const MOCK_MATCHES_BY_SEASON: Record<string, Match[]> = {};
-MOCK_SEASONS.forEach(season => {
-    MOCK_MATCHES_BY_SEASON[season] = combinedMatches.filter(match => match.season === season);
-});
-
-export const MOCK_TOURNAMENTS: Record<string, Tournament> = combinedTournaments;
-
-const allTeamNames = new Set<string>([OUR_TEAM_NAME]);
-combinedOpponentNames.forEach(name => allTeamNames.add(name));
-
-const uniqueTeamsMap = new Map<string, Team>();
-uniqueTeamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
-
-allTeamNames.forEach(normalizedName => {
-    if (normalizedName === OUR_TEAM_NAME) return; 
-    const id = opponentTeamIdsGlobalMap.get(normalizedName.toLowerCase()) || generateTeamId(normalizedName);
-    if (!uniqueTeamsMap.has(id)) {
-        uniqueTeamsMap.set(id, { id, name: normalizedName });
-    }
-});
-
-export const MOCK_TEAMS: Team[] = Array.from(uniqueTeamsMap.values());
-
-if (!MOCK_TEAMS.find(t => t.id === OUR_TEAM_ID)) {
-    MOCK_TEAMS.unshift({ id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
-}
-
-// console.log("Mock data processed from CSVs."); // Optional: uncomment for debugging
+populateFirestore().catch(console.error);
