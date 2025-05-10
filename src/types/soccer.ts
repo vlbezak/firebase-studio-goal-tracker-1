@@ -6,6 +6,7 @@ export interface Match {
   opponent: string;
   ourScore: number; // Score of our team
   opponentScore: number; // Score of the opponent team
+  score: string; // Combined score string, e.g., "3-2"
   result: number; // 1 for win, 0.5 for draw, 0 for loss
   tournamentId?: string; // ID of the tournament this match belongs to
   notes?: string;
@@ -28,4 +29,3 @@ export interface Tournament {
 export type SeasonDisplayItem =
   | { type: 'tournament'; data: Tournament; matches: Match[]; dateToSort: string; }
   | { type: 'independent_match'; data: Match; dateToSort: string; };
-
