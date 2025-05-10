@@ -4,7 +4,8 @@ export interface Match {
   date: string; // YYYY-MM-DD
   name: string; // e.g., "Group Stage: Our Team vs Opponent Team", "Friendly: Team Y vs Team Z"
   opponent: string;
-  score: string; // e.g., "3-2" (OurTeam-Opponent)
+  ourScore: number; // Score of our team
+  opponentScore: number; // Score of the opponent team
   result: number; // 1 for win, 0.5 for draw, 0 for loss
   tournamentId?: string; // ID of the tournament this match belongs to
   notes?: string;

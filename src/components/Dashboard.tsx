@@ -60,7 +60,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
             {season}
           </Link>
         </CardTitle>
-        <CardDescription>Overall Performance</CardDescription>
+        {/* Removed CardDescription "Overall Performance" */}
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col justify-center space-y-1">
