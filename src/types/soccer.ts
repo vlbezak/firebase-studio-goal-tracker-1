@@ -1,9 +1,16 @@
 
+export interface Team {
+  id: string;
+  name: string;
+  logoUrl?: string; // Optional
+}
+
 export interface Match {
   id: string;
   date: string; // YYYY-MM-DD
   name: string; // e.g., "Group Stage: Our Team vs Opponent Team", "Friendly: Team Y vs Team Z"
-  opponent: string;
+  ourTeamId: string;
+  opponentTeamId: string;
   ourScore: number; // Score of our team
   opponentScore: number; // Score of the opponent team
   score: string; // Combined score string, e.g., "3-2"
@@ -11,11 +18,10 @@ export interface Match {
   tournamentId?: string; // ID of the tournament this match belongs to
   notes?: string;
   place?: string; // For independent matches or if match place differs from tournament
-  ourTeam?: string; // Name of our team, defaults to "My Team"
 }
 
 export interface Tournament {
-  id: string;
+  id:string;
   name: string;
   season: string; // e.g., "2024"
   startDate: string; // YYYY-MM-DD

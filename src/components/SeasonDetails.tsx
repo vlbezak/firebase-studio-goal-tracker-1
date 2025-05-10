@@ -18,8 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS } from "@/data/mockData";
-import type { Match, Tournament, SeasonDisplayItem } from "@/types/soccer";
+import { MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS, MOCK_TEAMS } from "@/data/mockData";
+import type { Match, Tournament, SeasonDisplayItem, Team } from "@/types/soccer";
 import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,6 +37,11 @@ const getResultStyle = (result: number) => {
   return { color: "var(--draw-color)", letter: "D", label: "Draw" };
 };
 
+const getTeamName = (teamId: string): string => {
+  const team = MOCK_TEAMS.find(t => t.id === teamId);
+  return team ? team.name : "Unknown Team";
+};
+
 
 const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean }> = ({ matches, highlightMatchId, isMultiDateTournament }) => {
   if (!matches || matches.length === 0) {
@@ -49,6 +54,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
           <TableHead>Match</TableHead>
+          <TableHead className="w-[150px]">Teams</TableHead>
           <TableHead className="w-[80px]">Score</TableHead>
           <TableHead className="w-[80px]">Result</TableHead>
           <TableHead className="w-[50px] text-center">Notes</TableHead>
@@ -58,12 +64,14 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         {matches.map((match) => {
           const { color, letter, label } = getResultStyle(match.result);
           const isHighlighted = match.id === highlightMatchId;
+          const ourTeamName = getTeamName(match.ourTeamId);
+          const opponentTeamName = getTeamName(match.opponentTeamId);
           
-
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell>{match.name}</TableCell>
+              <TableCell>{ourTeamName} vs {opponentTeamName}</TableCell>
               <TableCell>{match.score}</TableCell>
               <TableCell>
                 <span
@@ -139,6 +147,8 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
 const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null }> = ({ match, highlightMatchId }) => {
   const { color, letter, label } = getResultStyle(match.result);
   const isHighlighted = match.id === highlightMatchId;
+  const ourTeamName = getTeamName(match.ourTeamId);
+  const opponentTeamName = getTeamName(match.opponentTeamId);
   
 
   return (
@@ -165,6 +175,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
         <div className="text-base">
+          <span>{ourTeamName} vs {opponentTeamName}</span>
           <span className="font-bold ml-2">{match.score}</span>
         </div>
         <span
@@ -279,4 +290,3 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 };
 
 export default SeasonDetails;
-

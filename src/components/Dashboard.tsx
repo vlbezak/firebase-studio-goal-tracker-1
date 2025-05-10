@@ -12,11 +12,16 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SeasonDetails from "./SeasonDetails";
-import { MOCK_SEASONS, MOCK_MATCHES_BY_SEASON } from "@/data/mockData";
-import type { Match } from "@/types/soccer";
+import { MOCK_SEASONS, MOCK_MATCHES_BY_SEASON, MOCK_TEAMS } from "@/data/mockData";
+import type { Match, Team } from "@/types/soccer";
 import { calculateSeasonStats } from "@/lib/utils";
 import { Goal } from "lucide-react"; 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const getTeamName = (teamId: string): string => {
+  const team = MOCK_TEAMS.find(t => t.id === teamId);
+  return team ? team.name : "Unknown Team";
+};
 
 const Dashboard = () => {
   const searchParams = useSearchParams();
@@ -96,6 +101,10 @@ const SeasonDashboard = ({ season }: { season: string }) => {
                 color = "var(--draw-color)";
                 letter = "D";
               }
+              const ourTeamName = getTeamName(item.ourTeamId);
+              const opponentTeamName = getTeamName(item.opponentTeamId);
+              const tooltipText = `${ourTeamName} vs ${opponentTeamName}, Score: ${item.score}`;
+
               return (
                 <Tooltip key={item.id}>
                   <TooltipTrigger asChild>
@@ -103,12 +112,13 @@ const SeasonDashboard = ({ season }: { season: string }) => {
                       href={`/?season=${season}&match=${item.id}`}
                       className="circle flex items-center justify-center w-8 h-8 rounded-full text-primary-foreground font-bold text-sm shadow-sm"
                       style={{ backgroundColor: color }}
+                      aria-label={`Result: ${letter}, Match: ${item.name}, Score: ${item.score}`}
                     >
                       {letter}
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{`${item.name}, Score: ${item.score}`}</p>
+                    <p>{tooltipText}</p>
                   </TooltipContent>
                 </Tooltip>
               );
@@ -122,4 +132,3 @@ const SeasonDashboard = ({ season }: { season: string }) => {
 
 
 export default Dashboard;
-
