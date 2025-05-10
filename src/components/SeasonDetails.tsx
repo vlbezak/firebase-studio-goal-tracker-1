@@ -54,7 +54,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
           <TableHead>Match</TableHead>
-          <TableHead className="w-[150px]">Teams</TableHead>
+          {/* Removed Teams column as it's redundant with Match column */}
           <TableHead className="w-[80px]">Score</TableHead>
           <TableHead className="w-[80px]">Result</TableHead>
           <TableHead className="w-[50px] text-center">Notes</TableHead>
@@ -64,14 +64,12 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         {matches.map((match) => {
           const { color, letter, label } = getResultStyle(match.result);
           const isHighlighted = match.id === highlightMatchId;
-          const ourTeamName = getTeamName(match.ourTeamId);
-          const opponentTeamName = getTeamName(match.opponentTeamId);
           
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell>{match.name}</TableCell>
-              <TableCell>{ourTeamName} vs {opponentTeamName}</TableCell>
+              {/* Removed Cell for Teams column */}
               <TableCell>{match.score}</TableCell>
               <TableCell>
                 <span
@@ -147,10 +145,7 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
 const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null }> = ({ match, highlightMatchId }) => {
   const { color, letter, label } = getResultStyle(match.result);
   const isHighlighted = match.id === highlightMatchId;
-  const ourTeamName = getTeamName(match.ourTeamId);
-  const opponentTeamName = getTeamName(match.opponentTeamId);
   
-
   return (
     <Card className={cn("mb-6 shadow-lg", isHighlighted ? "ring-2 ring-primary" : "")} id={`match-${match.id}`}>
       <CardHeader className="pb-3">
@@ -175,7 +170,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
         <div className="text-base">
-          <span>{ourTeamName} vs {opponentTeamName}</span>
+          {/* Removed explicit team display as it's in match.name */}
           <span className="font-bold ml-2">{match.score}</span>
         </div>
         <span
@@ -211,6 +206,8 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 
   matchesForSeason.forEach(match => {
     if (!match.tournamentId) {
+      // This condition might be hit less if all matches are now part of some conceptual tournament
+      // For true independent matches, or if the CSV implies no broader event for a match line.
       displayItems.push({
         type: 'independent_match',
         data: match,
@@ -244,7 +241,6 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
         </Button>
       </div>
 
-      {/* Season Summary Stats Card */}
       {matchesPlayed > 0 && (
         <Card className="mb-6 shadow-md">
           <CardHeader className="pb-3 pt-4">
@@ -290,3 +286,4 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 };
 
 export default SeasonDetails;
+
