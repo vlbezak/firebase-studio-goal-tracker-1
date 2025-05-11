@@ -1,9 +1,26 @@
 import 'dotenv/config'; // Load .env file
-// scripts/populate-firestore.ts
-import { db } from '../src/lib/firebase'; // Adjust path as necessary
-import { collection, writeBatch, doc } from 'firebase/firestore'; // Removed Timestamp as it's not used now
-import fs from 'fs';
-import path from 'path';
+import * as admin from 'firebase-admin';
+// No specific import from 'firebase-admin/firestore' needed when using admin.firestore()
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Initialize Firebase Admin SDK
+const serviceAccountPath = path.join(__dirname, '../secrets/goal-tracker-firebase-adminsdk-fbsvc.json');
+
+try {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    if (!admin.apps.length) { 
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+    }
+} catch (error) {
+    console.error("Failed to initialize Firebase Admin SDK:", error);
+    console.error(`Attempted to load service account from: ${serviceAccountPath}`);
+    process.exit(1); 
+}
+
+const adminDb = admin.firestore(); // Use admin.firestore()
 
 // ----- Start: Copied/adapted from src/data/mockData.ts -----
 const OUR_TEAM_ID = "mte";
@@ -395,12 +412,11 @@ async function populateFirestore() {
             processed.opponentTeamNames.forEach(name => allOpponentNames.add(name));
             console.log(`Processed data for season ${season.year}`);
         } catch (error) {
-            console.error(`Error reading or processing CSV for ${season.year}:`, error);
-            return; // Stop if one file fails
+            console.error(`Error reading or processing CSV for ${season.year} from ${csvPath}:`, error);
+            return; 
         }
     }
 
-    // Prepare teams
     const teamsMap = new Map<string, Team>();
     teamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
     allOpponentNames.forEach(normalizedName => {
@@ -411,21 +427,18 @@ async function populateFirestore() {
     });
     const finalTeams: Team[] = Array.from(teamsMap.values());
 
-    // Write to Firestore using batch writes
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
 
-    // Add Teams
-    const teamsCollection = collection(db, 'teams');
+    const teamsCollectionRef = adminDb.collection('teams');
     finalTeams.forEach(team => {
-        const teamRef = doc(teamsCollection, team.id);
+        const teamRef = teamsCollectionRef.doc(team.id);
         batch.set(teamRef, team);
     });
     console.log(`Preparing to write ${finalTeams.length} teams...`);
 
-    // Add Tournaments
-    const tournamentsCollection = collection(db, 'tournaments');
+    const tournamentsCollectionRef = adminDb.collection('tournaments');
     Object.values(allTournaments).forEach(t => {
-        const tournamentRef = doc(tournamentsCollection, t.id);
+        const tournamentRef = tournamentsCollectionRef.doc(t.id);
         const tournamentData: any = { ...t };
         if (tournamentData.notes === undefined) delete tournamentData.notes;
         if (tournamentData.place === undefined) delete tournamentData.place;
@@ -434,10 +447,9 @@ async function populateFirestore() {
     });
     console.log(`Preparing to write ${Object.values(allTournaments).length} tournaments...`);
 
-    // Add Matches
-    const matchesCollection = collection(db, 'matches');
+    const matchesCollectionRef = adminDb.collection('matches');
     allMatches.forEach(m => {
-        const matchRef = doc(matchesCollection, m.id);
+        const matchRef = matchesCollectionRef.doc(m.id);
         const matchData: any = { ...m };
         if (matchData.notes === undefined) delete matchData.notes;
         if (matchData.place === undefined) delete matchData.place;
@@ -448,9 +460,9 @@ async function populateFirestore() {
 
     try {
         await batch.commit();
-        console.log('Successfully populated Firestore with teams, tournaments, and matches!');
+        console.log('Successfully populated Firestore with teams, tournaments, and matches using Admin SDK!');
     } catch (error) {
-        console.error('Error writing batch to Firestore:', error);
+        console.error('Error writing batch to Firestore with Admin SDK:', error);
     }
 }
 

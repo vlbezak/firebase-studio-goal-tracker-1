@@ -1,65 +1,67 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-};
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-// scripts/populate-firestore.ts
-var firebase_1 = require("../src/lib/firebase"); // Adjust path as necessary
-var firestore_1 = require("firebase/firestore");
-var fs_1 = require("fs");
-var path_1 = require("path");
+require("dotenv/config"); // Load .env file
+const admin = __importStar(require("firebase-admin"));
+// No specific import from 'firebase-admin/firestore' needed when using admin.firestore()
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+// Initialize Firebase Admin SDK
+const serviceAccountPath = path.join(__dirname, '../secrets/goal-tracker-firebase-adminsdk-fbsvc.json');
+try {
+    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    if (!admin.apps.length) {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+    }
+}
+catch (error) {
+    console.error("Failed to initialize Firebase Admin SDK:", error);
+    console.error(`Attempted to load service account from: ${serviceAccountPath}`);
+    process.exit(1);
+}
+const adminDb = admin.firestore(); // Use admin.firestore()
 // ----- Start: Copied/adapted from src/data/mockData.ts -----
-var OUR_TEAM_ID = "mte";
-var OUR_TEAM_NAME = "MTE";
+const OUR_TEAM_ID = "mte";
+const OUR_TEAM_NAME = "MTE";
 function parseCsvDate(dateStr) {
     if (!dateStr || !/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(dateStr.trim()))
         return '';
-    var parts = dateStr.trim().split('.');
-    return "".concat(parts[2], "-").concat(parts[1].padStart(2, '0'), "-").concat(parts[0].padStart(2, '0'));
+    const parts = dateStr.trim().split('.');
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
 }
 function parseCsvResult(resultStr) {
     if (!resultStr)
@@ -74,12 +76,12 @@ function parseCsvResult(resultStr) {
 function normalizeTeamName(name) {
     if (name === undefined)
         return "";
-    var normalized = name.trim();
+    let normalized = name.trim();
     if (/gyirmot|gyrmot/i.test(normalized))
         normalized = "Gyirmot";
     else if (/^Kiraly SC$/i.test(normalized) || /^Kiraly Academy$/i.test(normalized) || /^Kiraly SE$/i.test(normalized) || /^Kiraly$/i.test(normalized))
         normalized = "Kiraly";
-    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized))
+    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized) || /^Kelen SC$/i.test(normalized) || /^Kelen$/i.test(normalized))
         normalized = "Kellen";
     else if (/gy[oöő]r eto/i.test(normalized) || normalized.toLowerCase() === "gyor" || normalized.toLowerCase() === "goyr")
         normalized = "Gyor ETO";
@@ -110,35 +112,34 @@ function generateTeamId(name) {
     return normalizeTeamName(name).trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, opponentTeamIdsMap) {
-    var _a;
-    var lines = csvData.trim().split(', ').map(line => line.split(', ').map(cell => cell.trim())); // Corrected line);
-    var seasonMatches = [];
-    var seasonTournaments = {};
-    var uniqueOpponentNamesThisSeason = new Set();
-    var currentTournamentInfo = null;
-    var matchIdCounter = 0;
-    var tournamentIdCounter = 0;
-    var lastKnownDateForTournamentMatches = null;
-    var finalizeCurrentTournament = function () {
-        var _a;
+    const dataAsLines = csvData.trim().split(String.fromCharCode(10));
+    const mappedLines = dataAsLines.map(line => line.split(',').map(cell => cell.trim()));
+    const seasonMatches = [];
+    const seasonTournaments = {};
+    const uniqueOpponentNamesThisSeason = new Set();
+    let currentTournamentInfo = null;
+    let matchIdCounter = 0;
+    let tournamentIdCounter = 0;
+    let lastKnownDateForTournamentMatches = null;
+    const finalizeCurrentTournament = () => {
         if (currentTournamentInfo) {
             if (currentTournamentInfo.matches.length > 0) {
-                currentTournamentInfo.matches.sort(function (a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime(); });
-                var tournament = {
+                currentTournamentInfo.matches.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                const tournament = {
                     id: currentTournamentInfo.id,
                     name: currentTournamentInfo.name,
                     season: seasonYear,
                     startDate: currentTournamentInfo.startDate || currentTournamentInfo.matches[0].date,
                     endDate: currentTournamentInfo.endDate || currentTournamentInfo.matches[currentTournamentInfo.matches.length - 1].date,
-                    place: currentTournamentInfo.place || ((_a = currentTournamentInfo.matches[0]) === null || _a === void 0 ? void 0 : _a.place) || 'Unknown Location',
+                    place: currentTournamentInfo.place || currentTournamentInfo.matches[0]?.place || 'Unknown Location',
                     finalStanding: currentTournamentInfo.finalStanding,
                     notes: currentTournamentInfo.notes.length > 0 ? currentTournamentInfo.notes.join('; ') : undefined,
                 };
                 seasonTournaments[tournament.id] = tournament;
-                currentTournamentInfo.matches.forEach(function (m) { return seasonMatches.push(__assign(__assign({}, m), { season: seasonYear })); });
+                currentTournamentInfo.matches.forEach(m => seasonMatches.push({ ...m, season: seasonYear }));
             }
             else if (currentTournamentInfo.name && currentTournamentInfo.startDate) {
-                var tournament = {
+                const tournament = {
                     id: currentTournamentInfo.id,
                     name: currentTournamentInfo.name,
                     season: seasonYear,
@@ -154,19 +155,19 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
         currentTournamentInfo = null;
         lastKnownDateForTournamentMatches = null;
     };
-    var _loop_1 = function (row) {
-        if (row.every(function (cell) { return cell === ''; }))
-            return "continue";
-        var firstCell = row[0];
-        var potentialDateOrTournamentName = row[0];
-        var potentialPlaceOrTeam = row[1];
-        var potentialTeamsOrScore = row[2];
-        var potentialFinalStandingRaw = row[6];
-        if (potentialDateOrTournamentName && !parseCsvDate(potentialDateOrTournamentName) && ((potentialFinalStandingRaw === null || potentialFinalStandingRaw === void 0 ? void 0 : potentialFinalStandingRaw.toLowerCase().includes("place")) || (potentialFinalStandingRaw === null || potentialFinalStandingRaw === void 0 ? void 0 : potentialFinalStandingRaw.toLowerCase()) === "no place")) {
+    for (const row of mappedLines) {
+        if (row.every(cell => cell === ''))
+            continue;
+        const firstCell = row[0];
+        const potentialDateOrTournamentName = row[0];
+        const potentialPlaceOrTeam = row[1];
+        const potentialTeamsOrScore = row[2];
+        const potentialFinalStandingRaw = row[6];
+        if (potentialDateOrTournamentName && !parseCsvDate(potentialDateOrTournamentName) && (potentialFinalStandingRaw?.toLowerCase().includes("place") || potentialFinalStandingRaw?.toLowerCase() === "no place")) {
             finalizeCurrentTournament();
-            var finalStanding = 'no place';
+            let finalStanding = 'no place';
             if (potentialFinalStandingRaw) {
-                var standingLower = potentialFinalStandingRaw.toLowerCase();
+                const standingLower = potentialFinalStandingRaw.toLowerCase();
                 if (standingLower.includes("1st"))
                     finalStanding = 1;
                 else if (standingLower.includes("2nd"))
@@ -174,7 +175,7 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                 else if (standingLower.includes("3rd"))
                     finalStanding = 3;
                 else {
-                    var num = parseInt(((_a = standingLower.match(/\d+/)) === null || _a === void 0 ? void 0 : _a[0]) || '', 10);
+                    const num = parseInt(standingLower.match(/\d+/)?.[0] || '', 10);
                     if (!isNaN(num))
                         finalStanding = num;
                     else if (standingLower !== "no place")
@@ -182,9 +183,9 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                 }
             }
             currentTournamentInfo = {
-                id: "s".concat(seasonYear.replace(/\//g, ''), "-t").concat(tournamentIdCounter++),
+                id: `s${seasonYear.replace(/\//g, '')}-t${tournamentIdCounter++}`,
                 name: potentialDateOrTournamentName,
-                finalStanding: finalStanding,
+                finalStanding,
                 notes: row[7] ? [row[7]] : [],
                 matches: [],
                 startDate: undefined,
@@ -195,47 +196,47 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                 currentTournamentInfo.startDate = parseCsvDate(potentialPlaceOrTeam);
                 currentTournamentInfo.place = potentialTeamsOrScore && !potentialTeamsOrScore.includes(':') ? potentialTeamsOrScore : undefined;
             }
-            return "continue";
+            continue;
         }
-        if (firstCell === '' && row.slice(1, 6).every(function (c) { return c === ''; }) && (row[6] || row[7])) {
+        if (firstCell === '' && row.slice(1, 6).every(c => c === '') && (row[6] || row[7])) {
             if (currentTournamentInfo) {
-                var note = [row[6], row[7]].filter(Boolean).join('; ');
+                const note = [row[6], row[7]].filter(Boolean).join('; ');
                 if (note)
                     currentTournamentInfo.notes.push(note);
             }
-            return "continue";
+            continue;
         }
-        var dateStr = potentialDateOrTournamentName;
+        let dateStr = potentialDateOrTournamentName;
         if (!dateStr && currentTournamentInfo && lastKnownDateForTournamentMatches) {
             dateStr = lastKnownDateForTournamentMatches;
         }
-        var parsedDate = parseCsvDate(dateStr);
+        const parsedDate = parseCsvDate(dateStr);
         if (!parsedDate && !currentTournamentInfo)
-            return "continue";
+            continue;
         if (parsedDate)
             lastKnownDateForTournamentMatches = dateStr;
-        var place = parsedDate ? potentialPlaceOrTeam : (currentTournamentInfo ? currentTournamentInfo.place : undefined);
-        var teamsStr = parsedDate ? potentialTeamsOrScore : potentialPlaceOrTeam;
-        var ourScoreStr = parsedDate ? row[3] : row[2];
-        var theirScoreStr = parsedDate ? row[4] : row[3];
-        var resultStr = parsedDate ? row[5] : row[4];
-        var stageOrNote1 = parsedDate ? row[6] : row[5];
-        var note2 = parsedDate ? row[7] : row[6];
+        const place = parsedDate ? potentialPlaceOrTeam : (currentTournamentInfo ? currentTournamentInfo.place : undefined);
+        const teamsStr = parsedDate ? potentialTeamsOrScore : potentialPlaceOrTeam;
+        const ourScoreStr = parsedDate ? row[3] : row[2];
+        const theirScoreStr = parsedDate ? row[4] : row[3];
+        const resultStr = parsedDate ? row[5] : row[4];
+        const stageOrNote1 = parsedDate ? row[6] : row[5];
+        const note2 = parsedDate ? row[7] : row[6];
         if ((teamsStr || (ourScoreStr && theirScoreStr)) && resultStr) {
-            var opponentNameForMatch = "";
-            var ourScore = parseInt(ourScoreStr, 10);
-            var opponentScore = parseInt(theirScoreStr, 10);
-            var result = parseCsvResult(resultStr);
+            let opponentNameForMatch = "";
+            let ourScore = parseInt(ourScoreStr, 10);
+            let opponentScore = parseInt(theirScoreStr, 10);
+            let result = parseCsvResult(resultStr);
             if (teamsStr && teamsStr.includes(':')) {
-                var _b = teamsStr.split(':').map(function (s) { return s.trim(); }), team1Raw = _b[0], team2Raw = _b[1];
-                var normalizedTeam1 = normalizeTeamName(team1Raw);
-                var normalizedTeam2 = normalizeTeamName(team2Raw);
+                const [team1Raw, team2Raw] = teamsStr.split(':').map(s => s.trim());
+                const normalizedTeam1 = normalizeTeamName(team1Raw);
+                const normalizedTeam2 = normalizeTeamName(team2Raw);
                 if (normalizedTeam1.toLowerCase() === ourTeamDisplayName.toLowerCase() || normalizedTeam1.toLowerCase() === "mte") {
                     opponentNameForMatch = normalizedTeam2;
                 }
                 else if (normalizedTeam2.toLowerCase() === ourTeamDisplayName.toLowerCase() || normalizedTeam2.toLowerCase() === "mte") {
                     opponentNameForMatch = normalizedTeam1;
-                    var tempScore = ourScore;
+                    const tempScore = ourScore;
                     ourScore = opponentScore;
                     opponentScore = tempScore;
                     if (result === 1)
@@ -244,41 +245,41 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                         result = 1;
                 }
                 else {
-                    console.warn("MTE not found in teams string: ".concat(teamsStr, " for match on ").concat(parsedDate || 'unknown date'));
-                    return "continue";
+                    // console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
+                    continue;
                 }
             }
             else if (teamsStr) {
                 opponentNameForMatch = normalizeTeamName(teamsStr);
             }
             else {
-                console.warn("Missing teams string for match on ".concat(parsedDate || 'unknown date', " with scores present."));
-                return "continue";
+                // console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
+                continue;
             }
             if (!opponentNameForMatch) {
-                console.warn("Could not determine opponent for match on ".concat(parsedDate || 'unknown date', " with teamsStr: \"").concat(teamsStr, "\""));
-                return "continue";
+                //  console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
+                continue;
             }
-            var opponentNameNormalized = normalizeTeamName(opponentNameForMatch);
+            const opponentNameNormalized = normalizeTeamName(opponentNameForMatch);
             uniqueOpponentNamesThisSeason.add(opponentNameNormalized);
-            var opponentId = opponentTeamIdsMap.get(opponentNameNormalized.toLowerCase());
+            let opponentId = opponentTeamIdsMap.get(opponentNameNormalized.toLowerCase());
             if (!opponentId) {
                 opponentId = generateTeamId(opponentNameNormalized);
                 opponentTeamIdsMap.set(opponentNameNormalized.toLowerCase(), opponentId);
             }
             if (isNaN(ourScore) || isNaN(opponentScore) || result === -1) {
-                console.warn("Invalid score or result for match: ".concat(ourTeamDisplayName, " vs ").concat(opponentNameNormalized, " on ").concat(parsedDate, ". Score: ").concat(ourScoreStr, "-").concat(theirScoreStr, ", Result: ").concat(resultStr));
-                return "continue";
+                // console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
+                continue;
             }
-            var matchNamePrefix = "";
-            var combinedNotesArray = [];
+            let matchNamePrefix = "";
+            const combinedNotesArray = [];
             if (stageOrNote1) {
-                var stageLower = stageOrNote1.toLowerCase();
+                const stageLower = stageOrNote1.toLowerCase();
                 if (stageLower.includes("group") || stageLower.includes("final") || stageLower.includes("semi final") || stageLower.includes("quarter final") || stageLower.includes("3rd place") || stageLower.includes("5th place") || stageLower.includes("match for") || stageLower.includes("playoff") || stageLower.includes("3. miesto") || stageLower.includes("po penaltach")) {
-                    matchNamePrefix = "".concat(stageOrNote1, ": ");
+                    matchNamePrefix = `${stageOrNote1}: `;
                     if (stageOrNote1.toLowerCase().includes("po penaltach") || stageOrNote1.toLowerCase().includes("penalty shootout")) {
-                        combinedNotesArray.push(stageOrNote1);
-                        matchNamePrefix = "";
+                        combinedNotesArray.push(stageOrNote1); // Keep as note
+                        matchNamePrefix = ""; // Don't prefix match name with "penalty shootout"
                     }
                 }
                 else {
@@ -287,18 +288,18 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
             }
             if (note2)
                 combinedNotesArray.push(note2);
-            var matchName = "".concat(matchNamePrefix).concat(OUR_TEAM_NAME, " vs ").concat(opponentNameNormalized);
-            var match = {
-                id: "s".concat(seasonYear.replace(/\//g, ''), "-m").concat(matchIdCounter++),
-                date: parsedDate || ((currentTournamentInfo === null || currentTournamentInfo === void 0 ? void 0 : currentTournamentInfo.startDate) || '1970-01-01'),
+            const matchName = `${matchNamePrefix}${OUR_TEAM_NAME} vs ${opponentNameNormalized}`;
+            const match = {
+                id: `s${seasonYear.replace(/\//g, '')}-m${matchIdCounter++}`,
+                date: parsedDate || (currentTournamentInfo?.startDate || '1970-01-01'),
                 name: matchName,
                 ourTeamId: ourTeamId,
                 opponentTeamId: opponentId,
-                ourScore: ourScore,
-                opponentScore: opponentScore,
-                score: "".concat(ourScore, "-").concat(opponentScore),
-                result: result,
-                place: place || (currentTournamentInfo === null || currentTournamentInfo === void 0 ? void 0 : currentTournamentInfo.place) || undefined,
+                ourScore,
+                opponentScore,
+                score: `${ourScore}-${opponentScore}`,
+                result,
+                place: place || currentTournamentInfo?.place || undefined,
                 notes: combinedNotesArray.length > 0 ? combinedNotesArray.join('; ') : undefined,
                 season: seasonYear,
             };
@@ -318,13 +319,13 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
             }
             else {
                 if (potentialDateOrTournamentName && (potentialDateOrTournamentName.toLowerCase().includes("summer preparation") || potentialDateOrTournamentName.toLowerCase().includes("training match") || potentialDateOrTournamentName.toLowerCase().includes("friendly tournament"))) {
-                    var implicitTournamentName_1 = potentialDateOrTournamentName;
-                    var implicitTournamentId = "s".concat(seasonYear.replace(/\//g, ''), "-it").concat(tournamentIdCounter++);
-                    var existingTournament = Object.values(seasonTournaments).find(function (t) { return t.name === implicitTournamentName_1 && t.startDate === parsedDate && t.place === (place || 'Unknown Location'); });
+                    const implicitTournamentName = potentialDateOrTournamentName;
+                    const implicitTournamentId = `s${seasonYear.replace(/\//g, '')}-it${tournamentIdCounter++}`;
+                    let existingTournament = Object.values(seasonTournaments).find(t => t.name === implicitTournamentName && t.startDate === parsedDate && t.place === (place || 'Unknown Location'));
                     if (!existingTournament) {
-                        var newTournament = {
+                        const newTournament = {
                             id: implicitTournamentId,
-                            name: implicitTournamentName_1,
+                            name: implicitTournamentName,
                             season: seasonYear,
                             startDate: parsedDate || '1970-01-01',
                             endDate: parsedDate || '1970-01-01',
@@ -341,18 +342,18 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                     }
                     else {
                         match.tournamentId = existingTournament.id;
-                        seasonMatches.push(__assign(__assign({}, match), { season: seasonYear }));
+                        seasonMatches.push({ ...match, season: seasonYear });
                     }
                 }
                 else {
-                    seasonMatches.push(__assign(__assign({}, match), { season: seasonYear }));
+                    seasonMatches.push({ ...match, season: seasonYear });
                 }
             }
         }
         else if (potentialDateOrTournamentName && !parseCsvDate(potentialDateOrTournamentName)) {
             finalizeCurrentTournament();
             currentTournamentInfo = {
-                id: "s".concat(seasonYear.replace(/\//g, ''), "-t").concat(tournamentIdCounter++),
+                id: `s${seasonYear.replace(/\//g, '')}-t${tournamentIdCounter++}`,
                 name: potentialDateOrTournamentName,
                 finalStanding: 'no place',
                 notes: [],
@@ -362,90 +363,83 @@ function processSeasonCsv(csvData, seasonYear, ourTeamId, ourTeamDisplayName, op
                 place: potentialPlaceOrTeam || undefined,
             };
         }
-    };
-    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
-        var row = lines_1[_i];
-        _loop_1(row);
     }
     finalizeCurrentTournament();
     return { matches: seasonMatches, tournaments: seasonTournaments, opponentTeamNames: uniqueOpponentNamesThisSeason };
 }
 // --- Main script logic ---
-function populateFirestore() {
-    return __awaiter(this, void 0, void 0, function () {
-        var opponentTeamIdsGlobalMap, allMatches, allTournaments, allOpponentNames, seasons, _i, seasons_1, season, csvPath, csvData, processed, teamsMap, finalTeams, batch, teamsCollection, tournamentsCollection, matchesCollection, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    opponentTeamIdsGlobalMap = new Map();
-                    allMatches = [];
-                    allTournaments = {};
-                    allOpponentNames = new Set();
-                    seasons = [
-                        { year: "2023/2024", filePath: "../data/csv/2023-2024.csv" },
-                        { year: "2024/2025", filePath: "../data/csv/2024-2025.csv" },
-                    ];
-                    for (_i = 0, seasons_1 = seasons; _i < seasons_1.length; _i++) {
-                        season = seasons_1[_i];
-                        csvPath = path_1.default.join(__dirname, season.filePath);
-                        try {
-                            csvData = fs_1.default.readFileSync(csvPath, 'utf-8');
-                            processed = processSeasonCsv(csvData, season.year, OUR_TEAM_ID, OUR_TEAM_NAME, opponentTeamIdsGlobalMap);
-                            allMatches = allMatches.concat(processed.matches);
-                            allTournaments = __assign(__assign({}, allTournaments), processed.tournaments);
-                            processed.opponentTeamNames.forEach(function (name) { return allOpponentNames.add(name); });
-                            console.log("Processed data for season ".concat(season.year));
-                        }
-                        catch (error) {
-                            console.error("Error reading or processing CSV for ".concat(season.year, ":"), error);
-                            return [2 /*return*/]; // Stop if one file fails
-                        }
-                    }
-                    teamsMap = new Map();
-                    teamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
-                    allOpponentNames.forEach(function (normalizedName) {
-                        var id = opponentTeamIdsGlobalMap.get(normalizedName.toLowerCase()) || generateTeamId(normalizedName);
-                        if (!teamsMap.has(id)) {
-                            teamsMap.set(id, { id: id, name: normalizedName });
-                        }
-                    });
-                    finalTeams = Array.from(teamsMap.values());
-                    batch = (0, firestore_1.writeBatch)(firebase_1.db);
-                    teamsCollection = (0, firestore_1.collection)(firebase_1.db, 'teams');
-                    finalTeams.forEach(function (team) {
-                        var teamRef = (0, firestore_1.doc)(teamsCollection, team.id);
-                        batch.set(teamRef, team);
-                    });
-                    console.log("Preparing to write ".concat(finalTeams.length, " teams..."));
-                    tournamentsCollection = (0, firestore_1.collection)(firebase_1.db, 'tournaments');
-                    Object.values(allTournaments).forEach(function (tournament) {
-                        var tournamentRef = (0, firestore_1.doc)(tournamentsCollection, tournament.id);
-                        // Convert date strings to Firestore Timestamps if necessary, or store as ISO strings
-                        // For simplicity, storing as ISO strings as per interface. Convert in app if needed.
-                        batch.set(tournamentRef, __assign({}, tournament));
-                    });
-                    console.log("Preparing to write ".concat(Object.values(allTournaments).length, " tournaments..."));
-                    matchesCollection = (0, firestore_1.collection)(firebase_1.db, 'matches');
-                    allMatches.forEach(function (match) {
-                        var matchRef = (0, firestore_1.doc)(matchesCollection, match.id);
-                        batch.set(matchRef, __assign({}, match));
-                    });
-                    console.log("Preparing to write ".concat(allMatches.length, " matches..."));
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, batch.commit()];
-                case 2:
-                    _a.sent();
-                    console.log('Successfully populated Firestore with teams, tournaments, and matches!');
-                    return [3 /*break*/, 4];
-                case 3:
-                    error_1 = _a.sent();
-                    console.error('Error writing batch to Firestore:', error_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
-            }
-        });
+async function populateFirestore() {
+    const opponentTeamIdsGlobalMap = new Map();
+    let allMatches = [];
+    let allTournaments = {};
+    const allOpponentNames = new Set();
+    const seasons = [
+        { year: "2023/2024", filePath: "../data/csv/2023-2024.csv" },
+        { year: "2024/2025", filePath: "../data/csv/2024-2025.csv" },
+    ];
+    for (const season of seasons) {
+        const csvPath = path.join(__dirname, season.filePath);
+        try {
+            const csvData = fs.readFileSync(csvPath, 'utf-8');
+            const processed = processSeasonCsv(csvData, season.year, OUR_TEAM_ID, OUR_TEAM_NAME, opponentTeamIdsGlobalMap);
+            allMatches = allMatches.concat(processed.matches);
+            allTournaments = { ...allTournaments, ...processed.tournaments };
+            processed.opponentTeamNames.forEach(name => allOpponentNames.add(name));
+            console.log(`Processed data for season ${season.year}`);
+        }
+        catch (error) {
+            console.error(`Error reading or processing CSV for ${season.year} from ${csvPath}:`, error);
+            return;
+        }
+    }
+    const teamsMap = new Map();
+    teamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME });
+    allOpponentNames.forEach(normalizedName => {
+        const id = opponentTeamIdsGlobalMap.get(normalizedName.toLowerCase()) || generateTeamId(normalizedName);
+        if (!teamsMap.has(id)) {
+            teamsMap.set(id, { id, name: normalizedName });
+        }
     });
+    const finalTeams = Array.from(teamsMap.values());
+    const batch = adminDb.batch();
+    const teamsCollectionRef = adminDb.collection('teams');
+    finalTeams.forEach(team => {
+        const teamRef = teamsCollectionRef.doc(team.id);
+        batch.set(teamRef, team);
+    });
+    console.log(`Preparing to write ${finalTeams.length} teams...`);
+    const tournamentsCollectionRef = adminDb.collection('tournaments');
+    Object.values(allTournaments).forEach(t => {
+        const tournamentRef = tournamentsCollectionRef.doc(t.id);
+        const tournamentData = { ...t };
+        if (tournamentData.notes === undefined)
+            delete tournamentData.notes;
+        if (tournamentData.place === undefined)
+            delete tournamentData.place;
+        if (tournamentData.finalStanding === undefined)
+            delete tournamentData.finalStanding;
+        batch.set(tournamentRef, tournamentData);
+    });
+    console.log(`Preparing to write ${Object.values(allTournaments).length} tournaments...`);
+    const matchesCollectionRef = adminDb.collection('matches');
+    allMatches.forEach(m => {
+        const matchRef = matchesCollectionRef.doc(m.id);
+        const matchData = { ...m };
+        if (matchData.notes === undefined)
+            delete matchData.notes;
+        if (matchData.place === undefined)
+            delete matchData.place;
+        if (matchData.tournamentId === undefined)
+            delete matchData.tournamentId;
+        batch.set(matchRef, matchData);
+    });
+    console.log(`Preparing to write ${allMatches.length} matches...`);
+    try {
+        await batch.commit();
+        console.log('Successfully populated Firestore with teams, tournaments, and matches using Admin SDK!');
+    }
+    catch (error) {
+        console.error('Error writing batch to Firestore with Admin SDK:', error);
+    }
 }
 populateFirestore().catch(console.error);
