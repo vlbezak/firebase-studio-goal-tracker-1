@@ -63,7 +63,7 @@ function normalizeTeamName(name: string | undefined): string {
     
     if (/gyirmot|gyrmot/i.test(normalized)) normalized = "Gyirmot";
     else if (/^Kiraly SC$/i.test(normalized) || /^Kiraly Academy$/i.test(normalized) || /^Kiraly SE$/i.test(normalized) || /^Kiraly$/i.test(normalized)) normalized = "Kiraly";
-    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized)) normalized = "Kellen"; 
+    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized) || /^Kelen SC$/i.test(normalized) || /^Kelen$/i.test(normalized)) normalized = "Kellen"; 
     else if (/gy[oöő]r eto/i.test(normalized) || normalized.toLowerCase() === "gyor" || normalized.toLowerCase() === "goyr") normalized = "Gyor ETO";
     else if (/^Petrzalka$/i.test(normalized) || /^FC Petrzalka$/i.test(normalized)) normalized = "FC Petrzalka";
     else if (/papa elc \(pelc\)|pala elc|pelc/i.test(normalized)) normalized = "Papa ELC (PELC)"; 
@@ -153,7 +153,7 @@ function processSeasonCsv(
         lastKnownDateForTournamentMatches = null;
     };
 
-    for (const row of mappedLines) { // Use mappedLines
+    for (const row of mappedLines) { 
         if (row.every(cell => cell === '')) continue;
 
         const firstCell = row[0]; 
@@ -243,18 +243,18 @@ function processSeasonCsv(
                     if (result === 1) result = 0;
                     else if (result === 0) result = 1;
                 } else {
-                    console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
+                    // console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
                     continue;
                 }
             } else if (teamsStr) {
                 opponentNameForMatch = normalizeTeamName(teamsStr);
             } else {
-                console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
+                // console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
                 continue; 
             }
             
             if (!opponentNameForMatch) {
-                 console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
+                //  console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
                 continue;
             }
             
@@ -268,7 +268,7 @@ function processSeasonCsv(
             }
 
             if (isNaN(ourScore) || isNaN(opponentScore) || result === -1) {
-                console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
+                // console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
                 continue;
             }
 
@@ -280,8 +280,8 @@ function processSeasonCsv(
                 if (stageLower.includes("group") || stageLower.includes("final") || stageLower.includes("semi final") || stageLower.includes("quarter final") || stageLower.includes("3rd place") || stageLower.includes("5th place") || stageLower.includes("match for") || stageLower.includes("playoff") || stageLower.includes("3. miesto") || stageLower.includes("po penaltach")) {
                     matchNamePrefix = `${stageOrNote1}: `;
                      if (stageOrNote1.toLowerCase().includes("po penaltach") || stageOrNote1.toLowerCase().includes("penalty shootout")) {
-                        combinedNotesArray.push(stageOrNote1);
-                        matchNamePrefix = ""; 
+                        combinedNotesArray.push(stageOrNote1); // Keep as note
+                        matchNamePrefix = ""; // Don't prefix match name with "penalty shootout"
                     }
                 } else {
                     combinedNotesArray.push(stageOrNote1);
@@ -335,7 +335,7 @@ function processSeasonCsv(
                             startDate: parsedDate || '1970-01-01',
                             endDate: parsedDate || '1970-01-01',
                             place: place || 'Unknown Location',
-                            finalStanding: 'no place',
+                            finalStanding: 'no place', 
                         };
                         seasonTournaments[newTournament.id] = newTournament;
                         match.tournamentId = newTournament.id;

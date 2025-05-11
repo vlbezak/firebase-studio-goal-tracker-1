@@ -1,3 +1,4 @@
+
 // src/data/mockData.ts
 import type { Match, Tournament, Team } from '@/types/soccer';
 
@@ -28,7 +29,7 @@ function normalizeTeamName(name: string | undefined): string {
     
     if (/gyirmot|gyrmot/i.test(normalized)) normalized = "Gyirmot";
     else if (/^Kiraly SC$/i.test(normalized) || /^Kiraly Academy$/i.test(normalized) || /^Kiraly SE$/i.test(normalized) || /^Kiraly$/i.test(normalized)) normalized = "Kiraly";
-    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized)) normalized = "Kellen"; 
+    else if (/^Kellen SC$/i.test(normalized) || /^Kellen$/i.test(normalized) || /^Kelen SC$/i.test(normalized) || /^Kelen$/i.test(normalized)) normalized = "Kellen"; 
     else if (/gy[oöő]r eto/i.test(normalized) || normalized.toLowerCase() === "gyor" || normalized.toLowerCase() === "goyr") normalized = "Gyor ETO";
     else if (/^Petrzalka$/i.test(normalized) || /^FC Petrzalka$/i.test(normalized)) normalized = "FC Petrzalka";
     else if (/papa elc \(pelc\)|pala elc|pelc/i.test(normalized)) normalized = "Papa ELC (PELC)"; 
@@ -208,18 +209,18 @@ function processSeasonCsv(
                     if (result === 1) result = 0;
                     else if (result === 0) result = 1;
                 } else {
-                    console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
+                    // console.warn(`MTE not found in teams string: ${teamsStr} for match on ${parsedDate || 'unknown date'}`);
                     continue;
                 }
             } else if (teamsStr) {
                 opponentNameForMatch = normalizeTeamName(teamsStr);
             } else {
-                console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
+                // console.warn(`Missing teams string for match on ${parsedDate || 'unknown date'} with scores present.`);
                 continue; 
             }
             
             if (!opponentNameForMatch) {
-                 console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
+                //  console.warn(`Could not determine opponent for match on ${parsedDate || 'unknown date'} with teamsStr: "${teamsStr}"`);
                 continue;
             }
             
@@ -233,7 +234,7 @@ function processSeasonCsv(
             }
 
             if (isNaN(ourScore) || isNaN(opponentScore) || result === -1) {
-                console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
+                // console.warn(`Invalid score or result for match: ${ourTeamDisplayName} vs ${opponentNameNormalized} on ${parsedDate}. Score: ${ourScoreStr}-${theirScoreStr}, Result: ${resultStr}`);
                 continue;
             }
 
@@ -300,41 +301,39 @@ function processSeasonCsv(
                             startDate: parsedDate || '1970-01-01',
                             endDate: parsedDate || '1970-01-01',
                             place: place || 'Unknown Location',
-                            finalStanding: 'no place', // Explicitly no place for these
+                            finalStanding: 'no place', 
                         };
                         seasonTournaments[newTournament.id] = newTournament;
                         match.tournamentId = newTournament.id;
-                        // Create temporary tournament info to add this match, then finalize
                         currentTournamentInfo = {
                              id: newTournament.id, name: newTournament.name, matches: [match], notes: [],
                              startDate: newTournament.startDate, endDate: newTournament.endDate, place: newTournament.place,
                         };
-                        finalizeCurrentTournament(); // Finalize immediately
+                        finalizeCurrentTournament(); 
                     } else {
                         match.tournamentId = existingTournament.id;
-                         seasonMatches.push({...match, season: seasonYear}); // Add to matches that will be processed later if part of a larger tournament
+                         seasonMatches.push({...match, season: seasonYear}); 
                     }
                  } else {
                     seasonMatches.push({...match, season: seasonYear}); 
                  }
             }
         } else if (potentialDateOrTournamentName && !parseCsvDate(potentialDateOrTournamentName)) {
-            // This is a new tournament header line
-            finalizeCurrentTournament(); // Finalize any previous tournament
+            finalizeCurrentTournament();
             currentTournamentInfo = {
                 id: `s${seasonYear.replace(/\//g, '')}-t${tournamentIdCounter++}`,
                 name: potentialDateOrTournamentName,
-                finalStanding: 'no place', // Default, will be updated if final standing is in row[6]
+                finalStanding: 'no place', 
                 notes: [],
                 matches: [],
-                startDate: undefined, // Will be set by first match or specific date cell
+                startDate: undefined,
                 endDate: undefined,
-                place: potentialPlaceOrTeam || undefined, // Place from row[1]
+                place: potentialPlaceOrTeam || undefined,
             };
         }
     }
 
-    finalizeCurrentTournament(); // Finalize any remaining tournament at the end of the CSV
+    finalizeCurrentTournament(); 
 
     return { matches: seasonMatches, tournaments: seasonTournaments, opponentTeamNames: uniqueOpponentNamesThisSeason };
 }
@@ -425,9 +424,7 @@ Summer Preparation,,,,,,no place,,
 7.8.2024,Gyirmot,MTE:Gyirmot,12,6,WIN,,,
 Summer Preparation,,,,,,no place,,
 23.8.2024,MTE,MTE:Papa,14,2,WIN,,,
-Summer Preparation,,,,,,no place,,
 31.8.2024,MTE,MTE: Petrzalka,3,1,WIN,,,
-Summer Preparation,,,,,,no place,,
 31.8.2024,MTE,MTE:Gyirmot,8,4,WIN,,,
 Summer Preparation,,,,,,no place,,
 3.9.2024,MITE,MTE:MITE,14,2,WIN,,,
@@ -468,8 +465,8 @@ MTE mini tournament,,,,,,no place,,
 10.11.2024,MTE,MTE:Inter Bratislava,9,2,WIN,,,
 ,,,,,,,,
 Gyor mini tournament,,,,,,no place,,
-17.11.2024,Gyor ETO,MTE:Sopron,10,4,WIN,,,
-17.11.2024,Gyor ETO,MTE:Csorna,4,2,WIN,,,
+17.11.2025,Gyor ETO,MTE:Sopron,10,4,WIN,,,
+17.11.2025,Gyor ETO,MTE:Csorna,4,2,WIN,,,
 17.11.2024,Gyor ETO,MTE:Gyor ETO,2,4,LOSS,,,
 ,,,,,,,,
 MTE mini tournament,,,,,,no place,,
@@ -482,7 +479,7 @@ DAC mini tournament,,,,,,no place,,
 30.11.2024,DAC Mol Academy,MTE:DAC,7,3,WIN,,,
 ,,,,,,,,
 Fonix Kupa Szekesfehervar,,,,,,2nd place,,
-07.12.2024,Szekesfehervar,MTE:Sekszar,5,1,WIN,group,,
+07.12.2024,Szekesfehervar,MTE: Sekszar,5,1,WIN,group,,
 07.12.2024,Szekesfehervar,MTE:Jaszfenyszaru,4,0,WIN,group,,
 07.12.2024,Szekesfehervar,MTE:Siofok,3,1,WIN,group,,
 07.12.2024,Szekesfehervar,MTE:Meszoly,0,1,LOSS,group,,
@@ -506,7 +503,7 @@ Tatabanya mini tournament,,,,,,2.nd place,,
 02.02.2025,Tatabanya,MTE:Tatabanya,2,1,WIN,group,,
 02.02.2025,Tatabanya,MTE:Kiraly SC,6,0,WIN,group,,
 02.02.2025,Tatabanya,MTE:Komarno KFC,1,1,DRAW,group,,
-02.02.2025,Tatabanya,MTE:Kelen SC,0,3,LOSS,group,,
+02.02.2025,Tatabanya,MTE:Kellen SC,0,3,LOSS,group,,
 ,,,,,,,,
 MTE friendly tournament,,,,,,no place,,
 12.02.2025,MTE,MTE:Inter Bratislava,8,2,WIN,,,
@@ -517,7 +514,7 @@ Gyorujfalu tournament,,,,,,3rd place,,
 22.02.2025,Gyorujfalu ,MTE:SC Sopron,1,3,LOSS,group,,
 22.02.2025,Gyorujfalu ,MTE:Sarvar,3,0,WIN,group,,
 22.02.2025,Gyorujfalu ,MTE:Gyorujfalu,0,1,LOSS,group,,
-22.02.2025,Gyorujfalu ,MTE:Velky Meder,3,1,WIN,group,"match for 3rd place",
+22.02.2025,Gyorujfalu ,MTE:Velky Meder,3,1,WIN,group,,
 ,,,,,,,,
 MTE mini tournament,,,,,,no place,,
 01.03.2025,MTE,MTE:Csorna,7,2,WIN,,,
@@ -539,7 +536,7 @@ MTE tournament,,,,,,no place,,
 ,,,,,,,,
 Turnaj Tatabanya,,,,,,no place,,
 29.03.2025,MTE,MTE:Kiraly,3,1,WIN,,,
-29.03.2025,MTE,MTE:Felcsot,0,0,DRAW,,,
+29.03.2025,MTE,MTE:Felcsut,0,0,DRAW,,,
 29.03.2025,MTE,MTE:Tatabanya,5,3,WIN,,,
 29.03.2025,MTE,MTE:Budafok,4,0,WIN,,,
 29.03.2025,MTE,MTE:Paks,4,0,WIN,,,
@@ -595,7 +592,7 @@ for (const season of seasonsToLoad) {
         combinedTournaments = { ...combinedTournaments, ...processed.tournaments };
         processed.opponentTeamNames.forEach(name => combinedOpponentNames.add(name));
     } catch (error) {
-        console.error(`Error processing CSV for ${season.year} in mockData.ts:`, error);
+        // console.error(`Error processing CSV for ${season.year} in mockData.ts:`, error);
     }
 }
 
@@ -609,9 +606,7 @@ MOCK_SEASONS.forEach(season => {
 
 export const MOCK_TOURNAMENTS: Record<string, Tournament> = combinedTournaments;
 
-// Create MOCK_TEAMS ensuring OUR_TEAM_NAME is "MTE" and not "MTE Eagles"
 const teamsMap = new Map<string, Team>();
-// Add our team first with the correct name
 teamsMap.set(OUR_TEAM_ID, { id: OUR_TEAM_ID, name: OUR_TEAM_NAME }); 
 
 combinedOpponentNames.forEach(normalizedName => {
