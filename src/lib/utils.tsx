@@ -38,32 +38,57 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   let displayStanding: ReactNode;
   let iconColor = "";
 
-  if (typeof standing === 'string' && isNaN(Number(standing.replace(/[^0-9]/g, '')))) { 
-    displayStanding = standing;
-    if (standing.toLowerCase() === "champions" || standing.toLowerCase() === "1st") iconColor = "text-yellow-500";
-  } else { 
-    const numericStanding = typeof standing === 'string' ? parseInt(standing.replace(/[^0-9]/g, ''), 10) : standing;
-    if (isNaN(numericStanding)) {
-        displayStanding = typeof standing === 'string' ? standing : String(standing);
-    } else {
+  if (typeof standing === 'string') {
+    const standingLower = standing.toLowerCase();
+    if (standingLower === "no place") {
+      displayStanding = "no final standing";
+    } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) {
+      displayStanding = standing;
+      if (standingLower === "champions" || standingLower === "1st") iconColor = "text-yellow-500";
+    } else { // It's a string but represents a number (e.g., "1st", "2nd")
+      const numericStanding = parseInt(standing.replace(/[^0-9]/g, ''), 10);
+      if (isNaN(numericStanding)) {
+        displayStanding = standing; // Fallback if parsing fails
+      } else {
         switch (numericStanding) {
           case 1:
             displayStanding = "1st";
-            iconColor = "text-yellow-500"; 
+            iconColor = "text-yellow-500";
             break;
           case 2:
             displayStanding = "2nd";
-            iconColor = "text-gray-400"; 
+            iconColor = "text-gray-400";
             break;
           case 3:
             displayStanding = "3rd";
-            iconColor = "text-orange-500"; 
+            iconColor = "text-orange-500";
             break;
           default:
             displayStanding = `${numericStanding}th`;
             break;
         }
+      }
     }
+  } else if (typeof standing === 'number') { // It's a number
+    switch (standing) {
+      case 1:
+        displayStanding = "1st";
+        iconColor = "text-yellow-500";
+        break;
+      case 2:
+        displayStanding = "2nd";
+        iconColor = "text-gray-400";
+        break;
+      case 3:
+        displayStanding = "3rd";
+        iconColor = "text-orange-500";
+        break;
+      default:
+        displayStanding = `${standing}th`;
+        break;
+    }
+  } else {
+    displayStanding = String(standing); // Fallback for other types
   }
   
   if (!displayStanding) {
@@ -132,12 +157,20 @@ export function calculateSeasonStats(matches: Match[]): SeasonStats {
     else if (match.result === 0.5) stats.draws++;
     else if (match.result === 0) stats.losses++;
 
-    const scoreParts = parseScore(match.score);
-    if (scoreParts) {
-      stats.goalsFor += scoreParts.ourGoals;
-      stats.goalsAgainst += scoreParts.opponentGoals;
+    // Use ourScore and opponentScore directly if they are numbers
+    if (typeof match.ourScore === 'number' && typeof match.opponentScore === 'number') {
+        stats.goalsFor += match.ourScore;
+        stats.goalsAgainst += match.opponentScore;
+    } else {
+        // Fallback to parsing the score string if direct numbers aren't available
+        const scoreParts = parseScore(match.score);
+        if (scoreParts) {
+            stats.goalsFor += scoreParts.ourGoals;
+            stats.goalsAgainst += scoreParts.opponentGoals;
+        }
     }
   });
 
   return stats;
 }
+
