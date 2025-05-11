@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -18,17 +17,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS, MOCK_TEAMS } from "@/data/mockData";
+// Removed MOCK_MATCHES_BY_SEASON, MOCK_TOURNAMENTS, MOCK_TEAMS imports
 import type { Match, Tournament, SeasonDisplayItem, Team } from "@/types/soccer";
 import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Goal } from "lucide-react";
 
-
+// Updated props to include data passed from Dashboard
 interface SeasonDetailsProps {
   season: string;
   highlightMatchId: string | null;
+  matchesForSeason: Match[];
+  tournamentsForSeason: Tournament[];
+  teams: Team[];
 }
 
 const getResultStyle = (result: number) => {
@@ -37,13 +39,14 @@ const getResultStyle = (result: number) => {
   return { color: "var(--draw-color)", letter: "D", label: "Draw" };
 };
 
-const getTeamName = (teamId: string): string => {
-  const team = MOCK_TEAMS.find(t => t.id === teamId);
+// getTeamName now accepts teams array as a parameter
+const getTeamName = (teamId: string, teams: Team[]): string => {
+  const team = teams.find(t => t.id === teamId);
   return team ? team.name : "Unknown Team";
 };
 
-
-const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean }> = ({ matches, highlightMatchId, isMultiDateTournament }) => {
+// MatchList props updated to include teams
+const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean; teams: Team[] }> = ({ matches, highlightMatchId, isMultiDateTournament, teams }) => {
   if (!matches || matches.length === 0) {
     return <p className="text-sm text-muted-foreground px-6 pb-4">No matches found for this event.</p>;
   }
@@ -54,7 +57,6 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
           <TableHead>Match</TableHead>
-          {/* Removed Teams column as it's redundant with Match column */}
           <TableHead className="w-[80px]">Score</TableHead>
           <TableHead className="w-[80px]">Result</TableHead>
           <TableHead className="w-[50px] text-center">Notes</TableHead>
@@ -69,7 +71,6 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell>{match.name}</TableCell>
-              {/* Removed Cell for Teams column */}
               <TableCell>{match.score}</TableCell>
               <TableCell>
                 <span
@@ -102,7 +103,8 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
   );
 };
 
-const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highlightMatchId: string | null }> = ({ tournament, matches, highlightMatchId }) => {
+// TournamentCard props updated to include teams
+const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highlightMatchId: string | null; teams: Team[] }> = ({ tournament, matches, highlightMatchId, teams }) => {
   const isMultiDate = !!tournament.endDate && tournament.startDate !== tournament.endDate;
   const sortedMatches = [...matches].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -136,12 +138,14 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
         </div>
       </CardHeader>
       <CardContent className="p-0"> 
-        <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} />
+        <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} teams={teams} />
       </CardContent>
     </Card>
   );
 };
 
+// IndependentMatchCard component does not directly use getTeamName so it only needs teams if it were to display team names from IDs directly
+// For now, it seems to rely on match.name which should already be processed. If not, teams prop would be needed here too.
 const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null }> = ({ match, highlightMatchId }) => {
   const { color, letter, label } = getResultStyle(match.result);
   const isHighlighted = match.id === highlightMatchId;
@@ -170,7 +174,6 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
         <div className="text-base">
-          {/* Removed explicit team display as it's in match.name */}
           <span className="font-bold ml-2">{match.score}</span>
         </div>
         <span
@@ -186,11 +189,12 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
 };
 
 
-const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId }) => {
-  const matchesForSeason: Match[] = MOCK_MATCHES_BY_SEASON[season] || [];
-  const tournamentsForSeason: Tournament[] = Object.values(MOCK_TOURNAMENTS).filter(t => t.season === season);
+const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId, matchesForSeason, tournamentsForSeason, teams }) => {
+  // Data is now coming from props
+  // const matchesForSeason: Match[] = MOCK_MATCHES_BY_SEASON[season] || []; // From prop
+  // const tournamentsForSeason: Tournament[] = Object.values(MOCK_TOURNAMENTS).filter(t => t.season === season); // From prop
+  
   const { wins, draws, losses, goalsFor, goalsAgainst, matchesPlayed } = calculateSeasonStats(matchesForSeason);
-
 
   const displayItems: SeasonDisplayItem[] = [];
 
@@ -206,8 +210,6 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 
   matchesForSeason.forEach(match => {
     if (!match.tournamentId) {
-      // This condition might be hit less if all matches are now part of some conceptual tournament
-      // For true independent matches, or if the CSV implies no broader event for a match line.
       displayItems.push({
         type: 'independent_match',
         data: match,
@@ -229,6 +231,13 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
       }
     }
   }, [highlightMatchId, displayItems]);
+  
+  // Fallback or loading state if essential data is not yet available (though Dashboard should handle this)
+  if (!matchesForSeason || !tournamentsForSeason || !teams) {
+      // This case should ideally be handled by the parent (Dashboard) showing a loading state
+      return <p>Loading season details...</p>; 
+  }
+
 
   return (
     <div className="p-4 flex flex-col gap-4">
@@ -264,7 +273,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
         </Card>
       )}
 
-      {displayItems.length === 0 && (
+      {displayItems.length === 0 && matchesPlayed === 0 && ( // Ensure this only shows if no data at all
            <Card className="shadow-md">
             <CardContent className="pt-6">
              <p className="text-muted-foreground">No matches or tournaments found for the {season} season.</p>
@@ -274,9 +283,11 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 
       {displayItems.map((item, index) => {
         if (item.type === 'tournament') {
-          return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} />;
+          // Pass teams to TournamentCard
+          return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} />;
         }
         if (item.type === 'independent_match') {
+          // IndependentMatchCard might also need 'teams' if it were to resolve team names from IDs
           return <IndependentMatchCard key={`match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
         }
         return null;
@@ -286,4 +297,3 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId 
 };
 
 export default SeasonDetails;
-

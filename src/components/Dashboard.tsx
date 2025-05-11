@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -12,14 +11,15 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SeasonDetails from "./SeasonDetails";
-import { MOCK_SEASONS, MOCK_MATCHES_BY_SEASON, MOCK_TEAMS } from "@/data/mockData";
-import type { Match, Team } from "@/types/soccer";
+import type { Match, Team, Tournament } from "@/types/soccer"; // Removed unused MOCK imports
 import { calculateSeasonStats } from "@/lib/utils";
-import { Goal } from "lucide-react"; 
+import { Goal, Loader2, AlertTriangle } from "lucide-react"; // Added Loader2, AlertTriangle
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSoccerData } from "@/hooks/useSoccerData"; // Import the new hook
 
-const getTeamName = (teamId: string): string => {
-  const team = MOCK_TEAMS.find(t => t.id === teamId);
+// getTeamName will now accept the list of teams as a parameter
+const getTeamName = (teamId: string, teams: Team[]): string => {
+  const team = teams.find(t => t.id === teamId);
   return team ? team.name : "Unknown Team";
 };
 
@@ -28,9 +28,41 @@ const Dashboard = () => {
   const seasonParam = searchParams.get("season");
   const matchParam = searchParams.get("match");
 
-  if (seasonParam && MOCK_SEASONS.includes(seasonParam)) {
+  const { seasons, matchesBySeason, teams, tournaments, loading, error } = useSoccerData();
+
+  if (loading) {
     return (
-        <SeasonDetails season={seasonParam} highlightMatchId={matchParam} />
+      <div className="flex flex-col items-center justify-center min-h-[calc(60vh)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-lg text-muted-foreground">Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(60vh)] text-center p-6">
+        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+        <h2 className="text-2xl font-semibold text-destructive mb-2">Error Loading Data</h2>
+        <p className="text-muted-foreground mb-4">There was an issue fetching data. Please try again later.</p>
+        {/* Optionally show error details in dev mode */}
+        {process.env.NODE_ENV === 'development' && <p className="text-xs text-muted-foreground">{error.message}</p>}
+      </div>
+    );
+  }
+  
+  // Ensure seasons data is available before trying to access it
+  if (seasonParam && seasons.includes(seasonParam)) {
+    const matchesForSelectedSeason = matchesBySeason[seasonParam] || [];
+    const tournamentsForSelectedSeason = tournaments.filter(t => t.season === seasonParam);
+    return (
+        <SeasonDetails 
+          season={seasonParam} 
+          highlightMatchId={matchParam}
+          matchesForSeason={matchesForSelectedSeason}
+          tournamentsForSeason={tournamentsForSelectedSeason}
+          teams={teams}
+        />
     );
   }
 
@@ -38,20 +70,31 @@ const Dashboard = () => {
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Season Performance</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-        {MOCK_SEASONS.map((season) => (
-          <SeasonDashboard key={season} season={season} />
+        {seasons.map((season) => (
+          <SeasonDashboard 
+            key={season} 
+            season={season} 
+            allMatchesForSeason={matchesBySeason[season] || []}
+            teams={teams} // Pass teams to SeasonDashboard
+          />
         ))}
       </div>
     </div>
   );
 };
 
-const SeasonDashboard = ({ season }: { season: string }) => {
-  const matches: Match[] = MOCK_MATCHES_BY_SEASON[season] || [];
-  const { wins, draws, losses, goalsFor, goalsAgainst } = calculateSeasonStats(matches);
+// SeasonDashboard props updated
+interface SeasonDashboardProps {
+  season: string;
+  allMatchesForSeason: Match[];
+  teams: Team[];
+}
 
-  // Sort matches by date descending to get the last 5
-  const last5Matches = [...matches]
+const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboardProps) => {
+  // const matches: Match[] = MOCK_MATCHES_BY_SEASON[season] || []; // Now passed as prop
+  const { wins, draws, losses, goalsFor, goalsAgainst } = calculateSeasonStats(allMatchesForSeason);
+
+  const last5Matches = [...allMatchesForSeason]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
@@ -60,7 +103,7 @@ const SeasonDashboard = ({ season }: { season: string }) => {
       <CardHeader>
         <CardTitle>
           <Link
-            href={`/?season=${season}`}
+            href={`/?season=${season}`} // Navigation will cause Dashboard to re-evaluate and pass props to SeasonDetails
             className="hover:underline"
           >
             {season}
@@ -101,8 +144,9 @@ const SeasonDashboard = ({ season }: { season: string }) => {
                 color = "var(--draw-color)";
                 letter = "D";
               }
-              const ourTeamName = getTeamName(item.ourTeamId);
-              const opponentTeamName = getTeamName(item.opponentTeamId);
+              // Use the parameterized getTeamName
+              const ourTeamName = getTeamName(item.ourTeamId, teams);
+              const opponentTeamName = getTeamName(item.opponentTeamId, teams);
               const tooltipText = `${ourTeamName} vs ${opponentTeamName}, Score: ${item.score}`;
 
               return (
@@ -129,6 +173,5 @@ const SeasonDashboard = ({ season }: { season: string }) => {
     </Card>
   );
 };
-
 
 export default Dashboard;
