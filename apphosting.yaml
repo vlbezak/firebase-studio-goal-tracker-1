@@ -8,14 +8,44 @@ runConfig:
   memoryMiB: 512
 
 # Environment variables and secrets.
-# env:
+env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
-  #   availability:
-  #     - BUILD
-  #     - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyDkFCn01dWRaqd9s8FQLGoSwdTfTwgbQNU # REPLACE WITH YOUR ACTUAL API KEY
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: goal-tracker-1-2e34e.firebaseapp.com # REPLACE WITH YOUR ACTUAL AUTH DOMAIN
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: goal-tracker-1-2e34e # REPLACE WITH YOUR ACTUAL PROJECT ID
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: goal-tracker-1-2e34e.firebasestorage.app # REPLACE WITH YOUR ACTUAL STORAGE BUCKET
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: 334058809490 # REPLACE WITH YOUR ACTUAL MESSAGING SENDER ID
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 334058809490:web:dc0309372dc9b2b6271e4b # REPLACE WITH YOUR ACTUAL APP ID
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-4Q85RCX1CL # REPLACE WITH YOUR ACTUAL MEASUREMENT ID
+    availability:
+      - BUILD
+      - RUNTIME
 
   # Grant access to secrets in Cloud Secret Manager.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
