@@ -2,22 +2,21 @@ import { useState, useEffect } from 'react';
 import { MOCK_SEASONS, MOCK_MATCHES_BY_SEASON, MOCK_TEAMS, MOCK_TOURNAMENTS } from '@/data/mockData';
 import type { Match, Team, Tournament, MatchesBySeason } from '@/types/soccer';
 import { db } from '@/lib/firebase'; // Your Firebase instance
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore'; // Removed unused query, where
 
 export interface SoccerData {
   seasons: string[];
   matchesBySeason: MatchesBySeason;
   teams: Team[];
-  tournaments: Tournament[]; // Added tournaments
+  tournaments: Tournament[];
   loading: boolean;
   error: Error | null;
 }
 
-// Helper to structure matches by season from a flat list
 const structureMatchesBySeason = (allMatches: Match[]): MatchesBySeason => {
   const matchesBySeason: MatchesBySeason = {};
   allMatches.forEach(match => {
-    if (!match.season) return; // Should not happen if data is clean
+    if (!match.season) return;
     if (!matchesBySeason[match.season]) {
       matchesBySeason[match.season] = [];
     }
@@ -26,12 +25,11 @@ const structureMatchesBySeason = (allMatches: Match[]): MatchesBySeason => {
   return matchesBySeason;
 };
 
-
 export function useSoccerData(): SoccerData {
   const [seasons, setSeasons] = useState<string[]>([]);
   const [matchesBySeason, setMatchesBySeason] = useState<MatchesBySeason>({});
   const [teams, setTeams] = useState<Team[]>([]);
-  const [tournaments, setTournaments] = useState<Tournament[]>([]); // Added tournaments state
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -45,19 +43,10 @@ export function useSoccerData(): SoccerData {
           setSeasons(MOCK_SEASONS);
           setMatchesBySeason(MOCK_MATCHES_BY_SEASON);
           setTeams(MOCK_TEAMS);
-          setTournaments(Object.values(MOCK_TOURNAMENTS)); // Convert MOCK_TOURNAMENTS object to array
+          setTournaments(Object.values(MOCK_TOURNAMENTS));
           setLoading(false);
         } else {
           console.log("Production/Test mode: Fetching data from Firestore for useSoccerData hook.");
-          
-          // Fetch Seasons (Assuming a 'seasons' collection with documents having a 'name' field or use a predefined list)
-          // For this example, let's assume seasons are predefined or fetched from a specific document.
-          // If you have a 'seasons' collection:
-          // const seasonsSnapshot = await getDocs(collection(db, 'seasons'));
-          // const firestoreSeasons = seasonsSnapshot.docs.map(doc => doc.data().name as string);
-          // For now, using mock seasons for structure, replace with actual Firestore fetch
-          const firestoreSeasons = MOCK_SEASONS; // Replace with actual fetch
-          setSeasons(firestoreSeasons);
 
           // Fetch Teams
           const teamsSnapshot = await getDocs(collection(db, 'teams'));
@@ -74,17 +63,31 @@ export function useSoccerData(): SoccerData {
           const firestoreTournaments = tournamentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tournament));
           setTournaments(firestoreTournaments);
 
+          // Derive seasons from matches and tournaments
+          const seasonSet = new Set<string>();
+          firestoreMatches.forEach(match => {
+            if (match.season) {
+              seasonSet.add(match.season);
+            }
+          });
+          firestoreTournaments.forEach(tournament => {
+            if (tournament.season) {
+              seasonSet.add(tournament.season);
+            }
+          });
+          
+          const derivedSeasons = Array.from(seasonSet).sort((a, b) => b.localeCompare(a)); // Sorts reverse chronologically for "YYYY/YYYY" or "YYYY-YYYY"
+          setSeasons(derivedSeasons);
+
           setLoading(false);
         }
       } catch (e) {
         console.error("Error fetching data:", e);
         setError(e as Error);
-        // Fallback to mock data in case of error during prod fetch to prevent app crash
-        // You might want a more robust error handling or display strategy here
-        setSeasons(MOCK_SEASONS);
-        setMatchesBySeason(MOCK_MATCHES_BY_SEASON);
-        setTeams(MOCK_TEAMS);
-        setTournaments(Object.values(MOCK_TOURNAMENTS));
+        setSeasons(MOCK_SEASONS); // Fallback
+        setMatchesBySeason(MOCK_MATCHES_BY_SEASON); // Fallback
+        setTeams(MOCK_TEAMS); // Fallback
+        setTournaments(Object.values(MOCK_TOURNAMENTS)); // Fallback
         setLoading(false);
       }
     };
