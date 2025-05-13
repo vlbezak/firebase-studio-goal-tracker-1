@@ -1,7 +1,6 @@
-
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getAnalytics, isSupported } from "firebase/analytics"; // Import isSupported
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -22,18 +21,20 @@ if (!getApps().length) {
   } catch (error) {
     console.error("CRITICAL Firebase Initialization Error:", error);
     console.error("Firebase config used:", JSON.stringify(firebaseConfig, null, 2));
-    // Handle or throw error appropriately if app cannot be initialized
   }
 } else {
-  app = getApp(); // Use getApp() if already initialized
+  app = getApp();
 }
 
+// Initialize Auth
 const auth = getAuth(app);
-const db = getFirestore(app); // Initialize Firestore with the app instance
+
+// Initialize Firestore
+const db = getFirestore(app);
 
 // Initialize Analytics only on the client side
 let analytics;
-if (typeof window !== 'undefined' && app) { // check app is initialized
+if (typeof window !== 'undefined' && app) {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
@@ -43,4 +44,4 @@ if (typeof window !== 'undefined' && app) { // check app is initialized
   });
 }
 
-export { app, auth, db, analytics }; // Export db
+export { app, auth, db, analytics };

@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "dev:real": "NEXT_PUBLIC_USE_MOCK_DATA=false next dev --turbopack -p 9002",
-    "dev:mock": "NEXT_PUBLIC_USE_MOCK_DATA=true next dev --turbopack -p 9002",
+    "dev:real": "cross-env NEXT_PUBLIC_USE_MOCK_DATA=false next dev --turbopack -p 9002",
+    "dev:mock": "cross-env NEXT_PUBLIC_USE_MOCK_DATA=true next dev --turbopack -p 9002",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
@@ -65,6 +65,7 @@
     "@types/node": "^20.17.46",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cross-env": "^7.0.3",
     "genkit-cli": "^1.0.4",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",

@@ -31,27 +31,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      // No need to setLoading(true) here as onAuthStateChanged will handle it
+      const provider = new GoogleAuthProvider();
+      // Add these lines to configure the Google sign-in
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will automatically update the user state and set loading to false
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      // You might want to add user-facing error handling here
-      setLoading(false); // Ensure loading is false in case of an error during sign-in attempt
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      // No need to setLoading(true) here
       await firebaseSignOut(auth);
-      // onAuthStateChanged will automatically update the user state to null and set loading to false
     } catch (error) {
       console.error("Error signing out: ", error);
-      // You might want to add user-facing error handling here
-      setLoading(false); // Ensure loading is false in case of an error during sign-out
+      setLoading(false);
     }
   };
 

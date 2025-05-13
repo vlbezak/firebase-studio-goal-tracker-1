@@ -21,9 +21,9 @@ export default function Home() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(80vh)] text-center p-6 rounded-lg shadow-lg bg-card">
-        <h1 className="text-4xl font-bold mb-6 text-card-foreground">Welcome to MTE Goal Tracker!</h1>
+        <h1 className="text-4xl font-bold mb-6 text-card-foreground">MTE Match tracker!</h1>
         <p className="text-xl text-muted-foreground mb-10 max-w-md">
-          Sign in with your Google account to start tracking your soccer team's performance, manage seasons, and view match details.
+          Sign in with your Google account to track your soccer team's performance, manage seasons, and view match details.
         </p>
         <Button 
           onClick={signInWithGoogle} 
