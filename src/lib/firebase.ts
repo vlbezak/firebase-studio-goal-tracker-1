@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
@@ -18,11 +18,6 @@ let app;
 if (!getApps().length) {
   try {
     app = initializeApp(firebaseConfig);
-    // Set the auth domain explicitly
-    if (typeof window !== 'undefined') {
-      const auth = getAuth(app);
-      auth.useDeviceLanguage();
-    }
   } catch (error) {
     console.error("CRITICAL Firebase Initialization Error:", error);
     console.error("Firebase config used:", JSON.stringify(firebaseConfig, null, 2));
@@ -31,8 +26,14 @@ if (!getApps().length) {
   app = getApp();
 }
 
-// Initialize Auth
+// Initialize Auth with persistence
 const auth = getAuth(app);
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserLocalPersistence)
+    .catch((error) => {
+      console.error("Auth persistence error:", error);
+    });
+}
 
 // Initialize Firestore
 const db = getFirestore(app);

@@ -17,13 +17,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // AuthProvider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      setIsSigningIn(false);
     });
 
     // Cleanup subscription on unmount
@@ -31,18 +33,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   const signInWithGoogle = async () => {
+    if (isSigningIn) {
+      console.log('Sign in already in progress');
+      return;
+    }
+
     try {
+      setIsSigningIn(true);
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account',
-        // Add these parameters to ensure proper redirect
-        redirect_uri: window.location.origin
-      });
       
-      await signInWithPopup(auth, provider);
-    } catch (error) {
+      // Configure the provider
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      // Add a small delay to ensure any previous auth attempts are cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const result = await signInWithPopup(auth, provider);
+      console.log('Sign in successful:', result.user.email);
+    } catch (error: any) {
       console.error("Error signing in with Google: ", error);
-      setLoading(false);
+      
+      // Only reset signing in state if it's not a popup closed error
+      if (error.code !== 'auth/cancelled-popup-request') {
+        setIsSigningIn(false);
+      }
+      
+      // If it's a popup blocked error, try redirect method
+      if (error.code === 'auth/popup-blocked') {
+        console.log('Popup was blocked, trying redirect method...');
+        // You could implement redirect method here if needed
+      }
     }
   };
 
@@ -51,7 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await firebaseSignOut(auth);
     } catch (error) {
       console.error("Error signing out: ", error);
-      setLoading(false);
     }
   };
 
