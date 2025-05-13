@@ -38,8 +38,8 @@ export function useSoccerData(): SoccerData {
       setLoading(true);
       setError(null);
       try {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("Development mode: Using mock data for useSoccerData hook.");
+        if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
+          console.log("Using mock data for useSoccerData hook.");
           setSeasons(MOCK_SEASONS);
           setMatchesBySeason(MOCK_MATCHES_BY_SEASON);
           setTeams(MOCK_TEAMS);
