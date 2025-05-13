@@ -33,9 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      // Add these lines to configure the Google sign-in
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        // Add these parameters to ensure proper redirect
+        redirect_uri: window.location.origin
       });
       
       await signInWithPopup(auth, provider);

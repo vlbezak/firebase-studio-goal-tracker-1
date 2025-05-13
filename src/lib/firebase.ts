@@ -18,6 +18,11 @@ let app;
 if (!getApps().length) {
   try {
     app = initializeApp(firebaseConfig);
+    // Set the auth domain explicitly
+    if (typeof window !== 'undefined') {
+      const auth = getAuth(app);
+      auth.useDeviceLanguage();
+    }
   } catch (error) {
     console.error("CRITICAL Firebase Initialization Error:", error);
     console.error("Firebase config used:", JSON.stringify(firebaseConfig, null, 2));
