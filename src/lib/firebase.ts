@@ -18,6 +18,10 @@ let app;
 if (!getApps().length) {
   try {
     app = initializeApp(firebaseConfig);
+    console.log('Firebase initialized with config:', {
+      ...firebaseConfig,
+      apiKey: '***' // Don't log the actual API key
+    });
   } catch (error) {
     console.error("CRITICAL Firebase Initialization Error:", error);
     console.error("Firebase config used:", JSON.stringify(firebaseConfig, null, 2));

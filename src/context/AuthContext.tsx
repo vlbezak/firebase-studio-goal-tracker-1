@@ -44,7 +44,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Configure the provider
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        // Add these parameters to ensure proper redirect
+        redirect_uri: window.location.origin
       });
 
       // Add a small delay to ensure any previous auth attempts are cleared
@@ -55,15 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error("Error signing in with Google: ", error);
       
-      // Only reset signing in state if it's not a popup closed error
+      // Log additional information for debugging
+      console.log('Current URL:', window.location.href);
+      console.log('Auth Domain:', process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN);
+      
       if (error.code !== 'auth/cancelled-popup-request') {
         setIsSigningIn(false);
-      }
-      
-      // If it's a popup blocked error, try redirect method
-      if (error.code === 'auth/popup-blocked') {
-        console.log('Popup was blocked, trying redirect method...');
-        // You could implement redirect method here if needed
       }
     }
   };
