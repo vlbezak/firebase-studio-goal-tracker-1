@@ -54,8 +54,8 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
           <TableHead>Match</TableHead>
-          <TableHead className="w-[60px]">Score</TableHead>
-          <TableHead className="w-[60px]">Result</TableHead>
+          <TableHead className="w-[50px]">Score</TableHead>
+          <TableHead className="w-[50px]">Result</TableHead>
           <TableHead className="w-[40px] text-center">Notes</TableHead>
         </TableRow>
       </TableHeader>
