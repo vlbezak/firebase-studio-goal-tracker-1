@@ -231,7 +231,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
     <TooltipProvider>
       <div className="flex flex-col gap-4">
         <div className="p-4 flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold">Season {season}</h1>
+          <h1 className="text-3xl font-bold">{season}</h1>
           <Button asChild variant="outline">
               <Link href="/">
                &lt; Dashboard
