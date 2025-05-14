@@ -44,7 +44,7 @@ export default function RootLayout({
                   <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
                     {/* Left side: Title */}
                     <a className="flex items-center space-x-2" href="/">
-                      <span className="font-bold">MTE Goal Tracker</span>
+                      <span className="font-bold">MTE</span>
                     </a>
                     {/* Right side: Controls */}
                     <div className="flex items-center gap-2">
