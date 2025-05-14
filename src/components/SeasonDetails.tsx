@@ -21,7 +21,7 @@ import Link from "next/link";
 import type { Match, Tournament, SeasonDisplayItem, Team } from "@/types/soccer";
 import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Goal, BarChart3, Swords } from "lucide-react"; // Added BarChart3 and Swords
 
 interface SeasonDetailsProps {
@@ -54,9 +54,9 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
           <TableHead>Match</TableHead>
-          <TableHead className="w-[80px]">Score</TableHead>
-          <TableHead className="w-[80px]">Result</TableHead>
-          <TableHead className="w-[50px] text-center">Notes</TableHead>
+          <TableHead className="w-[60px]">Score</TableHead>
+          <TableHead className="w-[60px]">Result</TableHead>
+          <TableHead className="w-[40px] text-center">Notes</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -228,59 +228,61 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="p-4 flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Season {season}</h1>
-        <Button asChild variant="outline">
-            <Link href="/">
-             &lt; Dashboard
-            </Link>
-        </Button>
-      </div>
+    <TooltipProvider>
+      <div className="flex flex-col gap-4">
+        <div className="p-4 flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold">Season {season}</h1>
+          <Button asChild variant="outline">
+              <Link href="/">
+               &lt; Dashboard
+              </Link>
+          </Button>
+        </div>
 
-      {matchesPlayed > 0 && (
-        <Card className="w-full mb-6 shadow-md">
-          <CardHeader className="pb-3 pt-4">
-            <CardTitle className="text-xl">Season Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4">
-            <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-muted-foreground" />
-                <span className="font-semibold">Statistics:</span>
-                <span>{wins} W - {draws} D - {losses} L</span>
-            </div>
-            <div className="flex items-center gap-2">
-                <Goal className="w-4 h-4 text-muted-foreground" />
-                <span className="font-semibold">Goals:</span>
-                <span>{goalsFor} : {goalsAgainst}</span>
-            </div>
-             <div className="flex items-center gap-2">
-                <Swords className="w-4 h-4 text-muted-foreground" />
-                <span className="font-semibold">Matches Played:</span>
-                <span>{matchesPlayed}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {displayItems.length === 0 && matchesPlayed === 0 && (
-           <Card className="w-full shadow-md">
-            <CardContent className="pt-6">
-             <p className="text-muted-foreground">No matches or tournaments found for the {season} season.</p>
+        {matchesPlayed > 0 && (
+          <Card className="w-full mb-6 shadow-md">
+            <CardHeader className="pb-3 pt-4">
+              <CardTitle className="text-xl">Season Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4">
+              <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-semibold">Statistics:</span>
+                  <span>{wins} W - {draws} D - {losses} L</span>
+              </div>
+              <div className="flex items-center gap-2">
+                  <Goal className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-semibold">Goals:</span>
+                  <span>{goalsFor} : {goalsAgainst}</span>
+              </div>
+               <div className="flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-semibold">Matches Played:</span>
+                  <span>{matchesPlayed}</span>
+              </div>
             </CardContent>
-           </Card>
-       )}
+          </Card>
+        )}
 
-      {displayItems.map((item, index) => {
-        if (item.type === 'tournament') {
-          return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} />;
-        }
-        if (item.type === 'independent_match') {
-          return <IndependentMatchCard key={`match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
-        }
-        return null;
-      })}
-    </div>
+        {displayItems.length === 0 && matchesPlayed === 0 && (
+             <Card className="w-full shadow-md">
+              <CardContent className="pt-6">
+               <p className="text-muted-foreground">No matches or tournaments found for the {season} season.</p>
+              </CardContent>
+             </Card>
+         )}
+
+        {displayItems.map((item, index) => {
+          if (item.type === 'tournament') {
+            return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} />;
+          }
+          if (item.type === 'independent_match') {
+            return <IndependentMatchCard key={`match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
+          }
+          return null;
+        })}
+      </div>
+    </TooltipProvider>
   );
 };
 

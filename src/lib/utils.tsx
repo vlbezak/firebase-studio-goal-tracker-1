@@ -41,7 +41,7 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   if (typeof standing === 'string') {
     const standingLower = standing.toLowerCase();
     if (standingLower === "no place") {
-      displayStanding = "no final standing";
+      displayStanding = "-"; // Changed from "no final standing"
     } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) {
       displayStanding = standing;
       if (standingLower === "champions" || standingLower === "1st") iconColor = "text-yellow-500";
@@ -91,10 +91,10 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
     displayStanding = String(standing); // Fallback for other types
   }
   
-  if (!displayStanding) {
-    displayStanding = String(standing);
-  }
-
+  // If after all checks, displayStanding is still null or undefined (shouldn't happen with current logic, but as a safeguard)
+   if (displayStanding === undefined || displayStanding === null) {
+     return null;
+   }
 
   return (
     <span className="flex items-center gap-1">
