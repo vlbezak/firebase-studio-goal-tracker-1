@@ -8,6 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import React from 'react';
 import { NoteTooltip } from '@/components/NoteTooltip';
 import { getResultStyle, cn } from '@/lib/utils'; // Import getResultStyle and cn
+import Link from 'next/link'; // Added Link import
+import { Button } from '@/components/ui/button'; // Added Button import
+import { ArrowLeft } from 'lucide-react'; // Added ArrowLeft icon
 
 interface FilteredMatch {
   id: string;
@@ -67,23 +70,22 @@ const SearchResultsPage = () => {
             const filteredMatchesInTournament: FilteredMatch[] = matchesInThisTournament
               .filter(match => {
                 const opponentTeamName = getTeamName(match.opponentTeamId, allTeamsList);
-                // const ourTeamName = getTeamName(match.ourTeamId, allTeamsList); // Our team name check might not be needed if search is only for opponent
                 return opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
-                       match.name.toLowerCase().includes(lowerCaseSearchQuery) || // Search in match name
-                       (match.notes && match.notes.toLowerCase().includes(lowerCaseSearchQuery)); // Search in match notes
+                       match.name.toLowerCase().includes(lowerCaseSearchQuery) || 
+                       (match.notes && match.notes.toLowerCase().includes(lowerCaseSearchQuery)); 
               })
               .map(match => ({
                 id: match.id,
                 date: match.date,
                 teams: [getTeamName(match.ourTeamId, allTeamsList), getTeamName(match.opponentTeamId, allTeamsList)],
                 score: [match.ourScore, match.opponentScore],
-                result: match.result, // Use numeric result
+                result: match.result, 
                 notes: match.notes,
                 tournamentName: tournament.name,
                 seasonName: currentSeasonName,
               }));
 
-            if (filteredMatchesInTournament.length > 0) {
+            if (filteredMatchesInTournament.length > 0 || tournament.name.toLowerCase().includes(lowerCaseSearchQuery)) {
               return {
                 id: tournament.id,
                 name: tournament.name,
@@ -99,7 +101,6 @@ const SearchResultsPage = () => {
         const filteredIndependentMatches: FilteredMatch[] = independentMatchesForThisSeason
             .filter(match => {
                 const opponentTeamName = getTeamName(match.opponentTeamId, allTeamsList);
-                // const ourTeamName = getTeamName(match.ourTeamId, allTeamsList);
                 return opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
                        match.name.toLowerCase().includes(lowerCaseSearchQuery) ||
                        (match.notes && match.notes.toLowerCase().includes(lowerCaseSearchQuery));
@@ -109,15 +110,13 @@ const SearchResultsPage = () => {
                 date: match.date,
                 teams: [getTeamName(match.ourTeamId, allTeamsList), getTeamName(match.opponentTeamId, allTeamsList)],
                 score: [match.ourScore, match.opponentScore],
-                result: match.result, // Use numeric result
+                result: match.result,
                 notes: match.notes,
-                tournamentName: "Other Matches", // Or specific category if available
+                tournamentName: "Other Matches",
                 seasonName: currentSeasonName,
             }));
         
         if (filteredIndependentMatches.length > 0) {
-            // Add independent matches as a pseudo-tournament or directly
-            // For simplicity, we'll add them to a generic "Other Matches" tournament entry if they don't fit elsewhere
             let otherMatchesTournament = processedTournaments.find(pt => pt.id === `independent-${currentSeasonName}`);
             if (!otherMatchesTournament) {
                  otherMatchesTournament = {
@@ -128,7 +127,6 @@ const SearchResultsPage = () => {
                 processedTournaments.push(otherMatchesTournament);
             }
             otherMatchesTournament.matches.push(...filteredIndependentMatches);
-            // Sort matches within "Other Matches" by date descending
             otherMatchesTournament.matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }
 
@@ -159,7 +157,15 @@ const SearchResultsPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Search Results for "{searchQuery}"</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Search Results for "{searchQuery}"</h1>
+        <Button asChild variant="outline">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </Button>
+      </div>
       {allFilteredMatches.length > 0 ? (
         <Table>
           <TableHeader>
@@ -205,3 +211,4 @@ const SearchResultsPage = () => {
 };
 
 export default SearchResultsPage;
+
