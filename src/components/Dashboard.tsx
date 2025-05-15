@@ -1,6 +1,7 @@
+
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; // Added useState
 import {
   Card,
   CardContent,
@@ -9,15 +10,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // Added useRouter
 import SeasonDetails from "./SeasonDetails";
 import type { Match, Team, Tournament } from "@/types/soccer";
 import { calculateSeasonStats } from "@/lib/utils";
-import { Goal, Loader2, AlertTriangle } from "lucide-react"; // Added Loader2, AlertTriangle
+import { Goal, Loader2, AlertTriangle, Search as SearchIcon } from "lucide-react"; // Added SearchIcon
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useSoccerData } from "@/hooks/useSoccerData"; // Import the new hook
+import { useSoccerData } from "@/hooks/useSoccerData";
+import { Input } from "@/components/ui/input"; // Added Input
+import { Button } from "@/components/ui/button"; // Added Button
 
-// getTeamName will now accept the list of teams as a parameter
 const getTeamName = (teamId: string, teams: Team[]): string => {
   const team = teams.find(t => t.id === teamId);
   return team ? team.name : "Unknown Team";
@@ -25,11 +27,25 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 
 const Dashboard = () => {
   const searchParams = useSearchParams();
+  const router = useRouter(); // Initialize router
   const seasonParam = searchParams.get("season");
-  const searchParam = searchParams.get("search");
+  const urlSearchParam = searchParams.get("search"); // Renamed to avoid conflict
   const matchParam = searchParams.get("match");
 
+  const [internalSearchQuery, setInternalSearchQuery] = useState(urlSearchParam || ''); // Local state for the input
+
   const { seasons, matchesBySeason, teams, tournaments, loading, error } = useSoccerData();
+
+  const handleDashboardSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (internalSearchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(internalSearchQuery.trim())}`);
+    } else {
+      // If search is cleared, navigate to dashboard without search query
+      // or optionally clear the searchParam from the current URL if staying on Dashboard
+      router.push('/'); // Or update URL: router.push(pathname) without search query
+    }
+  };
 
   if (loading) {
     return (
@@ -46,26 +62,22 @@ const Dashboard = () => {
         <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
         <h2 className="text-2xl font-semibold text-destructive mb-2">Error Loading Data</h2>
         <p className="text-muted-foreground mb-4">There was an issue fetching data. Please try again later.</p>
-        {/* Optionally show error details in dev mode */}
         {process.env.NODE_ENV === 'development' && <p className="text-xs text-muted-foreground">{error.message}</p>}
       </div>
     );
   }
   
-  // Filter seasons based on search term
+  // Filter seasons based on urlSearchParam (from URL, not local input state)
   const filteredSeasons = seasons.filter(season => {
-    if (!searchParam) return true; // Show all seasons if no search term
-    const lowerCaseSearch = searchParam.toLowerCase();
+    if (!urlSearchParam) return true; 
+    const lowerCaseSearch = urlSearchParam.toLowerCase();
     const matchesForSeason = matchesBySeason[season] || [];
-    // Check if any match in the season contains the search term in opponent team name (case-insensitive)
     return matchesForSeason.some(match => {
       const opponentTeamName = getTeamName(match.opponentTeamId, teams);
       return opponentTeamName.toLowerCase().includes(lowerCaseSearch);
     });
   });
 
-
-  // Ensure seasons data is available before trying to access it
   if (seasonParam && seasons.includes(seasonParam)) {
     const matchesForSelectedSeason = matchesBySeason[seasonParam] || [];
     const tournamentsForSelectedSeason = tournaments.filter(t => t.season === seasonParam);
@@ -81,38 +93,43 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4"> {/* Main container */}
-      <h1 className="text-2xl font-bold">Season Performance</h1> {/* Title */}
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-bold">Season Performance</h1>
 
-      {/* Search Input */}
-      <div className="relative"> {/* Container for search input and potential icon */}
-        <input
+      {/* Search Form that navigates to /search page */}
+      <form onSubmit={handleDashboardSearch} className="flex gap-2 items-center mb-4">
+        <Input
          type="text"
          placeholder="Search by opponent team..."
-         value={searchParam || ''}
-         onChange={(e) => {
-           const newSearchParams = new URLSearchParams(searchParams.toString());
-           e.target.value ? newSearchParams.set("search", e.target.value) : newSearchParams.delete("search");
-           window.history.pushState(null, '', `?${newSearchParams.toString()}`);
-         }}
-         className="w-full p-2 border rounded-md pl-4" // Adjusted padding
+         value={internalSearchQuery}
+         onChange={(e) => setInternalSearchQuery(e.target.value)}
+         className="flex-grow"
+         aria-label="Search by opponent team"
        />
+       <Button type="submit" variant="outline" size="icon" aria-label="Submit search">
+          <SearchIcon className="h-4 w-4" />
+       </Button>
+      </form>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {filteredSeasons.map((season) => (
           <SeasonDashboard 
             key={season} 
             season={season} 
             allMatchesForSeason={matchesBySeason[season] || []}
-            teams={teams} // Pass teams to SeasonDashboard
+            teams={teams}
           />
         ))}
+        {filteredSeasons.length === 0 && urlSearchParam && (
+          <p className="md:col-span-2 text-center text-muted-foreground">
+            No seasons match your search for "{urlSearchParam}".
+          </p>
+        )}
       </div>
     </div>
-    </div> // Closing tag for the main container
   );
 };
 
-// SeasonDashboard props updated
 interface SeasonDashboardProps {
   season: string;
   allMatchesForSeason: Match[];
@@ -120,7 +137,6 @@ interface SeasonDashboardProps {
 }
 
 const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboardProps) => {
-  // const matches: Match[] = MOCK_MATCHES_BY_SEASON[season] || []; // Now passed as prop
   const { wins, draws, losses, goalsFor, goalsAgainst } = calculateSeasonStats(allMatchesForSeason);
 
   const last5Matches = [...allMatchesForSeason]
@@ -132,7 +148,7 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboard
       <CardHeader>
         <CardTitle>
           <Link
-            href={`/?season=${season}`} // Navigation will cause Dashboard to re-evaluate and pass props to SeasonDetails
+            href={`/?season=${season}${urlSearchParam ? `&search=${encodeURIComponent(urlSearchParam)}` : ''}`} // Preserve search param on navigation
             className="hover:underline"
           >
             {season}
@@ -173,7 +189,6 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboard
                 color = "var(--draw-color)";
                 letter = "D";
               }
-              // Use the parameterized getTeamName
               const ourTeamName = getTeamName(item.ourTeamId, teams);
               const opponentTeamName = getTeamName(item.opponentTeamId, teams);
               const tooltipText = `${ourTeamName} vs ${opponentTeamName}, Score: ${item.score}`;
@@ -182,7 +197,7 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboard
                 <Tooltip key={item.id}>
                   <TooltipTrigger asChild>
                     <Link
-                      href={`/?season=${season}&match=${item.id}`}
+                      href={`/?season=${season}&match=${item.id}${urlSearchParam ? `&search=${encodeURIComponent(urlSearchParam)}` : ''}`} // Preserve search param
                       className="circle flex items-center justify-center w-8 h-8 rounded-full text-primary-foreground font-bold text-sm shadow-sm"
                       style={{ backgroundColor: color }}
                       aria-label={`Result: ${letter}, Match: ${item.name}, Score: ${item.score}`}
@@ -196,6 +211,9 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboard
                 </Tooltip>
               );
             })}
+            {last5Matches.length === 0 && (
+                <p className="text-xs text-muted-foreground">No recent matches.</p>
+            )}
           </div>
         </div>
       </CardContent>
