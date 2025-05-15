@@ -1,15 +1,18 @@
+
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GoogleIcon } from "@/components/icons/GoogleIcon"; // Added import
-import { LogOut, UserCircle } from "lucide-react"; // Added UserCircle and LogOut
+import { GoogleIcon } from "@/components/icons/GoogleIcon";
+import { LogOut, UserCircle } from "lucide-react";
+import { useTranslations } from '@/context/LanguageContext'; // Added
 
 export const AuthButton = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const t = useTranslations(); // Added
 
   if (loading) {
-    return <Button variant="outline" disabled size="sm">Loading...</Button>;
+    return <Button variant="outline" disabled size="sm">{t('loading')}</Button>;
   }
 
   if (user) {
@@ -22,7 +25,7 @@ export const AuthButton = () => {
         )}
         <Button variant="outline" onClick={signOut} size="sm" className="group">
           <LogOut className="h-4 w-4 mr-2 group-hover:text-destructive" />
-          Sign Out
+          {t('signOut')}
         </Button>
       </div>
     );
@@ -30,8 +33,8 @@ export const AuthButton = () => {
 
   return (
     <Button onClick={signInWithGoogle} variant="outline" className="border-input hover:bg-accent/50 shadow-sm">
-      <GoogleIcon className="mr-2 h-4 w-4" /> {/* Google Icon added */}
-      Sign in with Google
+      <GoogleIcon className="mr-2 h-4 w-4" />
+      {t('signInWithGoogle')}
     </Button>
   );
 };

@@ -3,20 +3,21 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useSoccerData } from '@/hooks/useSoccerData';
-import type { Team } from '@/types/soccer'; // Import Team type
+import type { Team } from '@/types/soccer';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import React from 'react';
 import { NoteTooltip } from '@/components/NoteTooltip';
-import { getResultStyle, cn } from '@/lib/utils'; // Import getResultStyle and cn
+import { getResultStyle, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from '@/context/LanguageContext'; // Added
 
 interface FilteredMatch {
   id: string;
   date: string;
-  teams: string[]; // [OurTeamName, OpponentTeamName]
-  score: number[]; // [OurScore, OpponentScore]
+  teams: string[]; 
+  score: number[]; 
   result: number;
   notes?: string;
   tournamentName?: string;
@@ -43,6 +44,7 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 const SearchResultsPage = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
+  const t = useTranslations(); // Added
   const { 
     seasons: seasonNames, 
     matchesBySeason, 
@@ -110,7 +112,7 @@ const SearchResultsPage = () => {
                 score: [match.ourScore, match.opponentScore],
                 result: match.result,
                 notes: match.notes,
-                tournamentName: "Other Matches", 
+                tournamentName: t('otherMatches'),
                 seasonName: currentSeasonName,
             }));
         
@@ -119,7 +121,7 @@ const SearchResultsPage = () => {
             if (!otherMatchesTournament) {
                  otherMatchesTournament = {
                     id: `independent-${currentSeasonName}`,
-                    name: "Other Matches", 
+                    name: t('otherMatches'), 
                     matches: [],
                 };
                 processedTournaments.push(otherMatchesTournament);
@@ -138,14 +140,14 @@ const SearchResultsPage = () => {
         return null;
       })
       .filter((s): s is FilteredSeason => s !== null);
-  }, [seasonNames, allTournamentsList, matchesBySeason, allTeamsList, searchQuery, loading, error]);
+  }, [seasonNames, allTournamentsList, matchesBySeason, allTeamsList, searchQuery, loading, error, t]);
 
   if (loading) {
-    return <div className="container mx-auto p-4">Loading search results...</div>;
+    return <div className="container mx-auto p-4">{t('loadingSearchResults')}</div>;
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 text-red-500">Error loading data: {error.message}</div>;
+    return <div className="container mx-auto p-4 text-red-500">{t('errorLoadingData', { error: error.message })}</div>;
   }
 
   const allFilteredMatches: FilteredMatch[] = filteredSeasons.flatMap(season =>
@@ -156,11 +158,11 @@ const SearchResultsPage = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Search Results for "{searchQuery}"</h1>
+        <h1 className="text-2xl font-bold">{t('searchResultsFor', { query: searchQuery })}</h1>
         <Button asChild variant="outline">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Dashboard
+            {t('backToDashboard')}
           </Link>
         </Button>
       </div>
@@ -168,17 +170,17 @@ const SearchResultsPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[90px] px-2">Date</TableHead>
-              <TableHead className="px-2">Match</TableHead>
-              <TableHead className="w-[150px] px-2 hidden sm:table-cell">Tournament/Event</TableHead>
-              <TableHead className="w-[70px] px-2 text-center">Score</TableHead>
-              <TableHead className="w-[70px] px-2 text-center">Result</TableHead>
-              <TableHead className="w-[40px] px-1 text-center">Notes</TableHead>
+              <TableHead className="w-[90px] px-2">{t('date')}</TableHead>
+              <TableHead className="px-2">{t('match')}</TableHead>
+              <TableHead className="w-[150px] px-2 hidden sm:table-cell">{t('tournamentEvent')}</TableHead>
+              <TableHead className="w-[70px] px-2 text-center">{t('score')}</TableHead>
+              <TableHead className="w-[70px] px-2 text-center">{t('result')}</TableHead>
+              <TableHead className="w-[40px] px-1 text-center">{t('notes')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {allFilteredMatches.map((match) => {
-               const { color, letter, label } = getResultStyle(match.result);
+               const { color, letter, label } = getResultStyle(match.result, t); // Pass t to getResultStyle
               return (
               <TableRow key={match.id}>
                 <TableCell className="text-xs px-2">{new Date(match.date).toLocaleDateString()}</TableCell>
@@ -202,7 +204,7 @@ const SearchResultsPage = () => {
           </TableBody>
         </Table>
       ) : (
-        <p>No matches found for "{searchQuery}".</p>
+        <p>{t('noMatchesFoundFor', { query: searchQuery })}</p>
       )}
     </div>
   );

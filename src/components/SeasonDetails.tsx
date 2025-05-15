@@ -24,6 +24,7 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Goal, BarChart3, Swords } from "lucide-react";
 import { Input } from "./ui/input";
+import { useTranslations } from '@/context/LanguageContext'; // Added
 
 interface SeasonDetailsProps {
   season: string;
@@ -38,25 +39,25 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
   return team ? team.name : "Unknown Team";
 };
 
-const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean; teams: Team[] }> = ({ matches, highlightMatchId, isMultiDateTournament, teams }) => {
+const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean; teams: Team[]; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ matches, highlightMatchId, isMultiDateTournament, teams, t }) => {
   if (!matches || matches.length === 0) {
-    return <p className="text-sm text-muted-foreground px-6 pb-4">No matches found for this event.</p>;
+    return <p className="text-sm text-muted-foreground px-6 pb-4">{t('noMatchesFoundFor', { query: ''})}</p>; // Simplified message
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {isMultiDateTournament && <TableHead className="w-[80px]">Date</TableHead>}
-          <TableHead>Match</TableHead>
-          <TableHead className="w-[40px] px-2">Score</TableHead>
-          <TableHead className="w-[40px] px-2">Result</TableHead>
-          <TableHead className="w-[40px] text-center">Notes</TableHead>
+          {isMultiDateTournament && <TableHead className="w-[80px]">{t('date')}</TableHead>}
+          <TableHead>{t('match')}</TableHead>
+          <TableHead className="w-[40px] px-2">{t('score')}</TableHead>
+          <TableHead className="w-[40px] px-2">{t('result')}</TableHead>
+          <TableHead className="w-[40px] text-center">{t('notes')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {matches.map((match) => {
-          const { color, letter, label } = getResultStyle(match.result);
+          const { color, letter, label } = getResultStyle(match.result, t);
           const isHighlighted = match.id === highlightMatchId;
           
           return (
@@ -95,7 +96,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
   );
 };
 
-const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highlightMatchId: string | null; teams: Team[] }> = ({ tournament, matches, highlightMatchId, teams }) => {
+const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highlightMatchId: string | null; teams: Team[]; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ tournament, matches, highlightMatchId, teams, t }) => {
   const isMultiDate = !!tournament.endDate && tournament.startDate !== tournament.endDate;
   const sortedMatches = [...matches].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -129,14 +130,14 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
         </div>
       </CardHeader>
       <CardContent className="p-0"> 
-        <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} teams={teams} />
+        <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} teams={teams} t={t} />
       </CardContent>
     </Card>
   );
 };
 
-const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null }> = ({ match, highlightMatchId }) => {
-  const { color, letter, label } = getResultStyle(match.result);
+const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ match, highlightMatchId, t }) => {
+  const { color, letter, label } = getResultStyle(match.result, t);
   const isHighlighted = match.id === highlightMatchId;
   
   return (
@@ -180,6 +181,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
 
 const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId, matchesForSeason, tournamentsForSeason, teams }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
+  const t = useTranslations(); // Added
 
   const { wins, draws, losses, goalsFor, goalsAgainst, matchesPlayed } = calculateSeasonStats(matchesForSeason);
 
@@ -239,7 +241,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
   }, [highlightMatchId, displayItems]);
   
   if (!matchesForSeason || !tournamentsForSeason || !teams) {
-      return <p>Loading season details...</p>; 
+      return <p>{t('loading')}...</p>; 
   }
 
 
@@ -250,14 +252,14 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
           <h1 className="text-3xl font-bold">{season}</h1>
           <Button asChild variant="outline">
               <Link href="/">
-               &lt; Dashboard
+               &lt; {t('dashboard')}
               </Link>
           </Button>
         </div>
 
         <div className="mb-4">
           <Input
-            placeholder="Search matches by opponent or tournament name..."
+            placeholder={t('searchMatchesPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -266,22 +268,22 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
         {matchesPlayed > 0 && (
           <Card className="w-full mb-6 shadow-md">
             <CardHeader className="pb-3 pt-4">
-              <CardTitle className="text-xl">Season Summary</CardTitle>
+              <CardTitle className="text-xl">{t('seasonSummary')}</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4">
               <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-semibold">Statistics:</span>
+                  <span className="font-semibold">{t('statistics')}:</span>
                   <span>{wins} W - {draws} D - {losses} L</span>
               </div>
               <div className="flex items-center gap-2">
                   <Goal className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-semibold">Goals:</span>
+                  <span className="font-semibold">{t('goals')}:</span>
                   <span>{goalsFor} : {goalsAgainst}</span>
               </div>
                <div className="flex items-center gap-2">
                   <Swords className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-semibold">Matches Played:</span>
+                  <span className="font-semibold">{t('matchesPlayed')}:</span>
                   <span>{matchesPlayed}</span>
               </div>
             </CardContent>
@@ -291,23 +293,23 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
         {displayItems.length === 0 && matchesPlayed === 0 && (
              <Card className="w-full shadow-md">
               <CardContent className="pt-6">
-               <p className="text-muted-foreground">No matches or tournaments found for the {season} season.</p>
+               <p className="text-muted-foreground">{t('noMatchesOrTournamentsFound', { season })}</p>
               </CardContent>
              </Card>
          )}
         
         {filteredDisplayItems.length === 0 && searchTerm && (
           <p className="text-center text-muted-foreground">
-            No results found for "{searchTerm}" in this season.
+            {t('noResultsFoundForInSeason', { searchTerm })}
           </p>
         )}
 
         {filteredDisplayItems.map((item, index) => {
           if (item.type === 'tournament') {
-            return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} />;
+            return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} t={t} />;
           }
           if (item.type === 'independent_match') {
-            return <IndependentMatchCard key={`independent-match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
+            return <IndependentMatchCard key={`independent-match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} t={t} />;
           }
           return null;
         })}

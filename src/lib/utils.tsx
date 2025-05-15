@@ -45,10 +45,10 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
     } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) {
       displayStanding = standing;
       if (standingLower === "champions" || standingLower === "1st") iconColor = "text-yellow-500";
-    } else { // It's a string but represents a number (e.g., "1st", "2nd")
+    } else { 
       const numericStanding = parseInt(standing.replace(/[^0-9]/g, ''), 10);
       if (isNaN(numericStanding)) {
-        displayStanding = standing; // Fallback if parsing fails
+        displayStanding = standing; 
       } else {
         switch (numericStanding) {
           case 1:
@@ -69,7 +69,7 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
         }
       }
     }
-  } else if (typeof standing === 'number') { // It's a number
+  } else if (typeof standing === 'number') { 
     switch (standing) {
       case 1:
         displayStanding = "1st";
@@ -88,11 +88,11 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
         break;
     }
   } else {
-    displayStanding = String(standing); // Fallback for other types
+    displayStanding = String(standing); 
   }
   
-   if (displayStanding === undefined || displayStanding === null) {
-     return null;
+   if (displayStanding === undefined || displayStanding === null || displayStanding === "no final standing") {
+     return <span className="text-xs italic text-muted-foreground">no final standing</span>;
    }
 
   return (
@@ -167,8 +167,8 @@ export function calculateSeasonStats(matches: Match[]): SeasonStats {
   return stats;
 }
 
-export const getResultStyle = (result: number) => {
-  if (result === 1) return { color: "var(--win-color)", letter: "W", label: "Win" };
-  if (result === 0) return { color: "var(--loss-color)", letter: "L", label: "Loss" };
-  return { color: "var(--draw-color)", letter: "D", label: "Draw" };
+export const getResultStyle = (result: number, t: (key: string) => string) => {
+  if (result === 1) return { color: "var(--win-color)", letter: "W", label: t('win') };
+  if (result === 0) return { color: "var(--loss-color)", letter: "L", label: t('loss') };
+  return { color: "var(--draw-color)", letter: "D", label: t('draw') };
 };
