@@ -118,6 +118,7 @@ const Dashboard = () => {
             season={season} 
             allMatchesForSeason={matchesBySeason[season] || []}
             teams={teams}
+            urlSearchParam={urlSearchParam} // Pass urlSearchParam here
           />
         ))}
         {filteredSeasons.length === 0 && urlSearchParam && (
@@ -134,9 +135,10 @@ interface SeasonDashboardProps {
   season: string;
   allMatchesForSeason: Match[];
   teams: Team[];
+  urlSearchParam: string | null; // Add urlSearchParam to props
 }
 
-const SeasonDashboard = ({ season, allMatchesForSeason, teams }: SeasonDashboardProps) => {
+const SeasonDashboard = ({ season, allMatchesForSeason, teams, urlSearchParam }: SeasonDashboardProps) => {
   const { wins, draws, losses, goalsFor, goalsAgainst } = calculateSeasonStats(allMatchesForSeason);
 
   const last5Matches = [...allMatchesForSeason]
