@@ -43,9 +43,15 @@ export const AuthButton = () => {
   }
 
   return (
-    <Button onClick={signInWithGoogle} variant="outline" className="border-input hover:bg-accent/50 shadow-sm">
+    <Button 
+      onClick={signInWithGoogle} 
+      variant="outline" // Changed to outline variant
+      size="sm" // Using sm size for consistency with other text buttons in header
+      className="border-input hover:bg-accent/50 shadow-sm"
+    >
       <GoogleIcon className="mr-2 h-4 w-4" />
       {t('signInWithGoogle')}
     </Button>
   );
 };
+
