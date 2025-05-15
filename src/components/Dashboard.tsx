@@ -100,7 +100,7 @@ const Dashboard = () => {
       <form onSubmit={handleDashboardSearch} className="flex gap-2 items-center mb-4">
         <Input
          type="text"
-         placeholder="Search by opponent team..."
+         placeholder="Search by opponent team in all seasons..."
          value={internalSearchQuery}
          onChange={(e) => setInternalSearchQuery(e.target.value)}
          className="flex-grow"

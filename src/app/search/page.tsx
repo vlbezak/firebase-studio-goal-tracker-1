@@ -8,19 +8,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import React from 'react';
 import { NoteTooltip } from '@/components/NoteTooltip';
 import { getResultStyle, cn } from '@/lib/utils'; // Import getResultStyle and cn
-import Link from 'next/link'; // Added Link import
-import { Button } from '@/components/ui/button'; // Added Button import
-import { ArrowLeft } from 'lucide-react'; // Added ArrowLeft icon
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface FilteredMatch {
   id: string;
   date: string;
   teams: string[]; // [OurTeamName, OpponentTeamName]
   score: number[]; // [OurScore, OpponentScore]
-  result: number;  // Changed from string to number
+  result: number;
   notes?: string;
-  tournamentName?: string; // Optional: to display if the match belongs to a tournament
-  seasonName?: string; // Optional: to display the season
+  tournamentName?: string;
+  seasonName?: string;
 }
 
 interface FilteredTournament {
@@ -30,12 +30,11 @@ interface FilteredTournament {
 }
 
 interface FilteredSeason {
-  id: string; // Season name
-  name: string; // Season name
+  id: string;
+  name: string;
   tournaments: FilteredTournament[];
 }
 
-// Helper function to get team name (can be moved to utils if used elsewhere)
 const getTeamName = (teamId: string, teams: Team[]): string => {
   const team = teams.find(t => t.id === teamId);
   return team ? team.name : "Unknown Team";
@@ -96,7 +95,6 @@ const SearchResultsPage = () => {
           })
           .filter((t): t is FilteredTournament => t !== null);
 
-        // Handle independent matches for this season
         const independentMatchesForThisSeason = matchesForThisSeason.filter(m => !m.tournamentId);
         const filteredIndependentMatches: FilteredMatch[] = independentMatchesForThisSeason
             .filter(match => {
@@ -112,7 +110,7 @@ const SearchResultsPage = () => {
                 score: [match.ourScore, match.opponentScore],
                 result: match.result,
                 notes: match.notes,
-                tournamentName: "Other Matches",
+                tournamentName: "Other Matches", 
                 seasonName: currentSeasonName,
             }));
         
@@ -170,12 +168,12 @@ const SearchResultsPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Date</TableHead>
-              <TableHead>Match</TableHead>
-              <TableHead className="w-[180px]">Tournament/Event</TableHead>
-              <TableHead className="w-[80px] text-center">Score</TableHead>
-              <TableHead className="w-[80px] text-center">Result</TableHead>
-              <TableHead className="w-[50px] text-center">Notes</TableHead>
+              <TableHead className="w-[90px] px-2">Date</TableHead>
+              <TableHead className="px-2">Match</TableHead>
+              <TableHead className="w-[150px] px-2 hidden sm:table-cell">Tournament/Event</TableHead>
+              <TableHead className="w-[70px] px-2 text-center">Score</TableHead>
+              <TableHead className="w-[70px] px-2 text-center">Result</TableHead>
+              <TableHead className="w-[40px] px-1 text-center">Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -183,11 +181,11 @@ const SearchResultsPage = () => {
                const { color, letter, label } = getResultStyle(match.result);
               return (
               <TableRow key={match.id}>
-                <TableCell className="text-xs">{new Date(match.date).toLocaleDateString()}</TableCell>
-                <TableCell>{match.teams.join(" vs ")}</TableCell>
-                <TableCell className="text-xs">{match.tournamentName} ({match.seasonName})</TableCell>
-                <TableCell className="text-center">{match.score.join(" - ")}</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-xs px-2">{new Date(match.date).toLocaleDateString()}</TableCell>
+                <TableCell className="px-2">{match.teams.join(" vs ")}</TableCell>
+                <TableCell className="text-xs px-2 hidden sm:table-cell">{match.tournamentName} ({match.seasonName})</TableCell>
+                <TableCell className="text-center px-2">{match.score.join(" - ")}</TableCell>
+                <TableCell className="text-center px-2">
                   <span
                     className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"
                     style={{ backgroundColor: color }}
@@ -196,7 +194,7 @@ const SearchResultsPage = () => {
                     {letter}
                   </span>
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center px-1">
                   {match.notes && <NoteTooltip notes={match.notes} />}
                 </TableCell>
               </TableRow>
@@ -211,4 +209,3 @@ const SearchResultsPage = () => {
 };
 
 export default SearchResultsPage;
-
