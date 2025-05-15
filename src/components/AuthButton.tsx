@@ -17,7 +17,7 @@ export const AuthButton = () => {
   const t = useTranslations();
 
   if (loading) {
-    return <Button variant="outline" disabled size="default">{t('loading')}</Button>; // Changed to default for h-10
+    return <Button variant="outline" disabled size="icon" aria-label={t('loading')}><LogOut className="h-4 w-4 animate-pulse" /></Button>;
   }
 
   if (user) {
@@ -43,15 +43,22 @@ export const AuthButton = () => {
   }
 
   return (
-    <Button 
-      onClick={signInWithGoogle} 
-      variant="outline"
-      size="default" // Changed from sm to default for h-10
-      className="border-input hover:bg-accent/50 shadow-sm"
-    >
-      <GoogleIcon className="mr-2 h-4 w-4" />
-      {t('signInWithGoogle')}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          onClick={signInWithGoogle}
+          variant="outline"
+          size="icon" // Changed to icon size
+          className="border-input hover:bg-accent/50 shadow-sm"
+          aria-label={t('signInWithGoogle')}
+        >
+          <GoogleIcon className="h-4 w-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{t('signInWithGoogle')}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
