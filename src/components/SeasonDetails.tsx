@@ -52,10 +52,10 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
     <Table>
       <TableHeader>
         <TableRow>
-          {isMultiDateTournament && <TableHead className="w-[100px]">Date</TableHead>}
+          {isMultiDateTournament && <TableHead className="w-[80px]">Date</TableHead>}
           <TableHead>Match</TableHead>
-          <TableHead className="w-[50px]">Score</TableHead>
-          <TableHead className="w-[50px]">Result</TableHead>
+          <TableHead className="w-[40px] px-2">Score</TableHead>
+          <TableHead className="w-[40px] px-2">Result</TableHead>
           <TableHead className="w-[40px] text-center">Notes</TableHead>
         </TableRow>
       </TableHeader>
@@ -67,8 +67,8 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
-              <TableCell>{match.name}</TableCell>
-              <TableCell>{match.score}</TableCell>
+              <TableCell className="px-4">{match.name}</TableCell>
+              <TableCell className="px-2">{match.score}</TableCell>
               <TableCell>
                 <span
                   className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm"
