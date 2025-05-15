@@ -23,6 +23,7 @@ import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisp
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Goal, BarChart3, Swords } from "lucide-react"; // Added BarChart3 and Swords
+import { Input } from "./ui/input";
 
 interface SeasonDetailsProps {
   season: string;
@@ -184,6 +185,8 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
 
 
 const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId, matchesForSeason, tournamentsForSeason, teams }) => {
+  const [searchTerm, setSearchTerm] = React.useState('');
+
   const { wins, draws, losses, goalsFor, goalsAgainst, matchesPlayed } = calculateSeasonStats(matchesForSeason);
 
   const displayItems: SeasonDisplayItem[] = [];
@@ -209,6 +212,22 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
   });
 
   displayItems.sort((a, b) => new Date(b.dateToSort).getTime() - new Date(a.dateToSort).getTime());
+
+  const filteredDisplayItems = displayItems.reduce((acc, item) => {
+    if (item.type === 'tournament') {
+      const filteredMatches = (item.matches || []).filter(match =>
+        match.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (filteredMatches.length > 0) {
+        acc.push({ ...item, matches: filteredMatches });
+      }
+    } else if (item.type === 'independent_match') {
+      if (item.data.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+        acc.push(item);
+      }
+    }
+    return acc;
+  }, [] as SeasonDisplayItem[]);
 
   React.useEffect(() => {
     if (highlightMatchId) {
@@ -237,6 +256,13 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
                &lt; Dashboard
               </Link>
           </Button>
+        </div>
+
+        <div className="mb-4">
+          <Input
+            placeholder="Search matches by team name..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
 
         {matchesPlayed > 0 && (
@@ -272,12 +298,12 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
              </Card>
          )}
 
-        {displayItems.map((item, index) => {
+        {filteredDisplayItems.map((item, index) => {
           if (item.type === 'tournament') {
             return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} />;
           }
           if (item.type === 'independent_match') {
-            return <IndependentMatchCard key={`match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
+            return <IndependentMatchCard key={`independent-match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} />;
           }
           return null;
         })}

@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SeasonDetails from "./SeasonDetails";
-import type { Match, Team, Tournament } from "@/types/soccer"; // Removed unused MOCK imports
+import type { Match, Team, Tournament } from "@/types/soccer";
 import { calculateSeasonStats } from "@/lib/utils";
 import { Goal, Loader2, AlertTriangle } from "lucide-react"; // Added Loader2, AlertTriangle
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,6 +26,7 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 const Dashboard = () => {
   const searchParams = useSearchParams();
   const seasonParam = searchParams.get("season");
+  const searchParam = searchParams.get("search");
   const matchParam = searchParams.get("match");
 
   const { seasons, matchesBySeason, teams, tournaments, loading, error } = useSoccerData();
@@ -51,6 +52,19 @@ const Dashboard = () => {
     );
   }
   
+  // Filter seasons based on search term
+  const filteredSeasons = seasons.filter(season => {
+    if (!searchParam) return true; // Show all seasons if no search term
+    const lowerCaseSearch = searchParam.toLowerCase();
+    const matchesForSeason = matchesBySeason[season] || [];
+    // Check if any match in the season contains the search term in opponent team name (case-insensitive)
+    return matchesForSeason.some(match => {
+      const opponentTeamName = getTeamName(match.opponentTeamId, teams);
+      return opponentTeamName.toLowerCase().includes(lowerCaseSearch);
+    });
+  });
+
+
   // Ensure seasons data is available before trying to access it
   if (seasonParam && seasons.includes(seasonParam)) {
     const matchesForSelectedSeason = matchesBySeason[seasonParam] || [];
@@ -67,10 +81,24 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Season Performance</h1>
+    <div className="flex flex-col gap-4"> {/* Main container */}
+      <h1 className="text-2xl font-bold">Season Performance</h1> {/* Title */}
+
+      {/* Search Input */}
+      <div className="relative"> {/* Container for search input and potential icon */}
+        <input
+         type="text"
+         placeholder="Search by opponent team..."
+         value={searchParam || ''}
+         onChange={(e) => {
+           const newSearchParams = new URLSearchParams(searchParams.toString());
+           e.target.value ? newSearchParams.set("search", e.target.value) : newSearchParams.delete("search");
+           window.history.pushState(null, '', `?${newSearchParams.toString()}`);
+         }}
+         className="w-full p-2 border rounded-md pl-4" // Adjusted padding
+       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-        {seasons.map((season) => (
+        {filteredSeasons.map((season) => (
           <SeasonDashboard 
             key={season} 
             season={season} 
@@ -80,6 +108,7 @@ const Dashboard = () => {
         ))}
       </div>
     </div>
+    </div> // Closing tag for the main container
   );
 };
 
