@@ -38,5 +38,7 @@
   "loss": "Vereség",
   "draw": "Döntetlen",
   "backToDashboard": "Irányítópult",
-  "otherMatches": "Egyéb Mérkőzések"
+  "otherMatches": "Egyéb Mérkőzések",
+  "switchToHungarian": "Váltás magyarra",
+  "switchToEnglish": "Váltás angolra"
 }

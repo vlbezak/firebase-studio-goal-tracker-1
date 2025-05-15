@@ -38,5 +38,7 @@
   "loss": "Loss",
   "draw": "Draw",
   "backToDashboard": "Dashboard",
-  "otherMatches": "Other Matches"
+  "otherMatches": "Other Matches",
+  "switchToHungarian": "Switch to Hungarian",
+  "switchToEnglish": "Switch to English"
 }
