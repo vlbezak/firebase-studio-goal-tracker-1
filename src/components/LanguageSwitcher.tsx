@@ -20,7 +20,7 @@ export const LanguageSwitcher = () => {
   return (
     <Button
       variant="outline"
-      size="sm" // Using 'sm' for better text fit
+      size="default" // Changed from sm to default for h-10
       onClick={toggleLanguage}
       aria-label={tooltipText}
       title={tooltipText} // Simple browser tooltip
@@ -29,3 +29,4 @@ export const LanguageSwitcher = () => {
     </Button>
   );
 };
+

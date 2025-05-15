@@ -17,7 +17,7 @@ export const AuthButton = () => {
   const t = useTranslations();
 
   if (loading) {
-    return <Button variant="outline" disabled size="sm">{t('loading')}</Button>;
+    return <Button variant="outline" disabled size="default">{t('loading')}</Button>; // Changed to default for h-10
   }
 
   if (user) {
@@ -45,8 +45,8 @@ export const AuthButton = () => {
   return (
     <Button 
       onClick={signInWithGoogle} 
-      variant="outline" // Changed to outline variant
-      size="sm" // Using sm size for consistency with other text buttons in header
+      variant="outline"
+      size="default" // Changed from sm to default for h-10
       className="border-input hover:bg-accent/50 shadow-sm"
     >
       <GoogleIcon className="mr-2 h-4 w-4" />
