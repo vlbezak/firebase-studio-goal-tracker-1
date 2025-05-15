@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import type { Match, Tournament, SeasonDisplayItem, Team } from "@/types/soccer";
-import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn } from "@/lib/utils";
+import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn, getResultStyle } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { Goal, BarChart3, Swords } from "lucide-react"; // Added BarChart3 and Swords
+import { Goal, BarChart3, Swords } from "lucide-react";
 import { Input } from "./ui/input";
 
 interface SeasonDetailsProps {
@@ -32,12 +32,6 @@ interface SeasonDetailsProps {
   tournamentsForSeason: Tournament[];
   teams: Team[];
 }
-
-const getResultStyle = (result: number) => {
-  if (result === 1) return { color: "var(--win-color)", letter: "W", label: "Win" };
-  if (result === 0) return { color: "var(--loss-color)", letter: "L", label: "Loss" };
-  return { color: "var(--draw-color)", letter: "D", label: "Draw" };
-};
 
 const getTeamName = (teamId: string, teams: Team[]): string => {
   const team = teams.find(t => t.id === teamId);
@@ -216,13 +210,16 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
   const filteredDisplayItems = displayItems.reduce((acc, item) => {
     if (item.type === 'tournament') {
       const filteredMatches = (item.matches || []).filter(match =>
+        getTeamName(match.opponentTeamId, teams).toLowerCase().includes(searchTerm.toLowerCase()) ||
         match.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      if (filteredMatches.length > 0) {
+      if (filteredMatches.length > 0 || item.data.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         acc.push({ ...item, matches: filteredMatches });
       }
     } else if (item.type === 'independent_match') {
-      if (item.data.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (getTeamName(item.data.opponentTeamId, teams).toLowerCase().includes(searchTerm.toLowerCase()) || 
+          item.data.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
         acc.push(item);
       }
     }
@@ -260,7 +257,8 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 
         <div className="mb-4">
           <Input
-            placeholder="Search matches by team name..."
+            placeholder="Search matches by opponent or tournament name..."
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
@@ -297,6 +295,12 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
               </CardContent>
              </Card>
          )}
+        
+        {filteredDisplayItems.length === 0 && searchTerm && (
+          <p className="text-center text-muted-foreground">
+            No results found for "{searchTerm}" in this season.
+          </p>
+        )}
 
         {filteredDisplayItems.map((item, index) => {
           if (item.type === 'tournament') {
@@ -313,5 +317,3 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 };
 
 export default SeasonDetails;
-
-    

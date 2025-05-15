@@ -7,14 +7,17 @@ import type { Team } from '@/types/soccer'; // Import Team type
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import React from 'react';
 import { NoteTooltip } from '@/components/NoteTooltip';
+import { getResultStyle, cn } from '@/lib/utils'; // Import getResultStyle and cn
 
 interface FilteredMatch {
   id: string;
   date: string;
   teams: string[]; // [OurTeamName, OpponentTeamName]
   score: number[]; // [OurScore, OpponentScore]
-  result: string;  // "WIN", "DRAW", "LOSS"
+  result: number;  // Changed from string to number
   notes?: string;
+  tournamentName?: string; // Optional: to display if the match belongs to a tournament
+  seasonName?: string; // Optional: to display the season
 }
 
 interface FilteredTournament {
@@ -33,14 +36,6 @@ interface FilteredSeason {
 const getTeamName = (teamId: string, teams: Team[]): string => {
   const team = teams.find(t => t.id === teamId);
   return team ? team.name : "Unknown Team";
-};
-
-// Helper function to map numeric result to string
-const mapResultToString = (result: number): string => {
-    if (result === 1) return "WIN";
-    if (result === 0.5) return "DRAW";
-    if (result === 0) return "LOSS";
-    return "UNKNOWN";
 };
 
 const SearchResultsPage = () => {
@@ -69,27 +64,30 @@ const SearchResultsPage = () => {
           .map(tournament => {
             const matchesInThisTournament = matchesForThisSeason.filter(m => m.tournamentId === tournament.id);
 
-            const filteredMatches: FilteredMatch[] = matchesInThisTournament
+            const filteredMatchesInTournament: FilteredMatch[] = matchesInThisTournament
               .filter(match => {
                 const opponentTeamName = getTeamName(match.opponentTeamId, allTeamsList);
-                const ourTeamName = getTeamName(match.ourTeamId, allTeamsList);
-                return ourTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
-                       opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery);
+                // const ourTeamName = getTeamName(match.ourTeamId, allTeamsList); // Our team name check might not be needed if search is only for opponent
+                return opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
+                       match.name.toLowerCase().includes(lowerCaseSearchQuery) || // Search in match name
+                       (match.notes && match.notes.toLowerCase().includes(lowerCaseSearchQuery)); // Search in match notes
               })
               .map(match => ({
                 id: match.id,
                 date: match.date,
                 teams: [getTeamName(match.ourTeamId, allTeamsList), getTeamName(match.opponentTeamId, allTeamsList)],
                 score: [match.ourScore, match.opponentScore],
-                result: mapResultToString(match.result),
+                result: match.result, // Use numeric result
                 notes: match.notes,
+                tournamentName: tournament.name,
+                seasonName: currentSeasonName,
               }));
 
-            if (filteredMatches.length > 0) {
+            if (filteredMatchesInTournament.length > 0) {
               return {
                 id: tournament.id,
                 name: tournament.name,
-                matches: filteredMatches,
+                matches: filteredMatchesInTournament,
               };
             }
             return null;
@@ -101,28 +99,38 @@ const SearchResultsPage = () => {
         const filteredIndependentMatches: FilteredMatch[] = independentMatchesForThisSeason
             .filter(match => {
                 const opponentTeamName = getTeamName(match.opponentTeamId, allTeamsList);
-                const ourTeamName = getTeamName(match.ourTeamId, allTeamsList);
-                return ourTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
-                       opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery);
+                // const ourTeamName = getTeamName(match.ourTeamId, allTeamsList);
+                return opponentTeamName.toLowerCase().includes(lowerCaseSearchQuery) ||
+                       match.name.toLowerCase().includes(lowerCaseSearchQuery) ||
+                       (match.notes && match.notes.toLowerCase().includes(lowerCaseSearchQuery));
             })
             .map(match => ({
                 id: match.id,
                 date: match.date,
                 teams: [getTeamName(match.ourTeamId, allTeamsList), getTeamName(match.opponentTeamId, allTeamsList)],
                 score: [match.ourScore, match.opponentScore],
-                result: mapResultToString(match.result),
+                result: match.result, // Use numeric result
                 notes: match.notes,
+                tournamentName: "Other Matches", // Or specific category if available
+                seasonName: currentSeasonName,
             }));
         
         if (filteredIndependentMatches.length > 0) {
-            // Add independent matches as a pseudo-tournament
-            processedTournaments.push({
-                id: `independent-${currentSeasonName}`, // Unique ID for pseudo-tournament
-                name: "Other Matches", 
-                matches: filteredIndependentMatches,
-            });
+            // Add independent matches as a pseudo-tournament or directly
+            // For simplicity, we'll add them to a generic "Other Matches" tournament entry if they don't fit elsewhere
+            let otherMatchesTournament = processedTournaments.find(pt => pt.id === `independent-${currentSeasonName}`);
+            if (!otherMatchesTournament) {
+                 otherMatchesTournament = {
+                    id: `independent-${currentSeasonName}`,
+                    name: "Other Matches", 
+                    matches: [],
+                };
+                processedTournaments.push(otherMatchesTournament);
+            }
+            otherMatchesTournament.matches.push(...filteredIndependentMatches);
+            // Sort matches within "Other Matches" by date descending
+            otherMatchesTournament.matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         }
-
 
         if (processedTournaments.length > 0) {
           return {
@@ -144,44 +152,51 @@ const SearchResultsPage = () => {
     return <div className="container mx-auto p-4 text-red-500">Error loading data: {error.message}</div>;
   }
 
+  const allFilteredMatches: FilteredMatch[] = filteredSeasons.flatMap(season =>
+    season.tournaments.flatMap(tournament => tournament.matches)
+  ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Search Results for "{searchQuery}"</h1>
-      {filteredSeasons.length > 0 ? (
-        filteredSeasons.map((season) => (
-          <div key={season.id} className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">{season.name}</h2>
-            {season.tournaments.map((tournament) => (
-              <div key={tournament.id} className="mb-4">
-                <h3 className="text-lg font-medium mb-2">{tournament.name}</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px]">Date</TableHead>
-                      <TableHead>Match</TableHead>
-                      <TableHead className="w-[50px] text-center">Score</TableHead>
-                      <TableHead className="w-[50px] text-center">Result</TableHead>
-                      <TableHead className="w-[40px] text-center">Notes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tournament.matches.map((match) => (
-                      <TableRow key={match.id}>
-                        <TableCell className="text-xs">{new Date(match.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{match.teams.join(" vs ")}</TableCell>
-                        <TableCell className="text-center">{match.score.join(" - ")}</TableCell>
-                        <TableCell className="text-center">{match.result}</TableCell>
-                        <TableCell className="text-center">
-                          {match.notes && <NoteTooltip notes={match.notes} />}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
-          </div>
-        ))
+      {allFilteredMatches.length > 0 ? (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Date</TableHead>
+              <TableHead>Match</TableHead>
+              <TableHead className="w-[180px]">Tournament/Event</TableHead>
+              <TableHead className="w-[80px] text-center">Score</TableHead>
+              <TableHead className="w-[80px] text-center">Result</TableHead>
+              <TableHead className="w-[50px] text-center">Notes</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {allFilteredMatches.map((match) => {
+               const { color, letter, label } = getResultStyle(match.result);
+              return (
+              <TableRow key={match.id}>
+                <TableCell className="text-xs">{new Date(match.date).toLocaleDateString()}</TableCell>
+                <TableCell>{match.teams.join(" vs ")}</TableCell>
+                <TableCell className="text-xs">{match.tournamentName} ({match.seasonName})</TableCell>
+                <TableCell className="text-center">{match.score.join(" - ")}</TableCell>
+                <TableCell className="text-center">
+                  <span
+                    className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"
+                    style={{ backgroundColor: color }}
+                    title={label}
+                  >
+                    {letter}
+                  </span>
+                </TableCell>
+                <TableCell className="text-center">
+                  {match.notes && <NoteTooltip notes={match.notes} />}
+                </TableCell>
+              </TableRow>
+            )})}
+          </TableBody>
+        </Table>
       ) : (
         <p>No matches found for "{searchQuery}".</p>
       )}

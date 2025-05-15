@@ -41,7 +41,7 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   if (typeof standing === 'string') {
     const standingLower = standing.toLowerCase();
     if (standingLower === "no place") {
-      displayStanding = "-"; // Changed from "no final standing"
+      displayStanding = "no final standing";
     } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) {
       displayStanding = standing;
       if (standingLower === "champions" || standingLower === "1st") iconColor = "text-yellow-500";
@@ -91,7 +91,6 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
     displayStanding = String(standing); // Fallback for other types
   }
   
-  // If after all checks, displayStanding is still null or undefined (shouldn't happen with current logic, but as a safeguard)
    if (displayStanding === undefined || displayStanding === null) {
      return null;
    }
@@ -104,7 +103,6 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   );
 }
 
-// Corrected export: export the imported 'StickyNote' as 'StickyNoteIcon'
 export { StickyNote as StickyNoteIcon };
 
 
@@ -115,19 +113,16 @@ export interface ScoreParts {
 
 export function parseScore(score: string): ScoreParts | null {
   if (!score || !score.includes('-')) {
-    // console.warn(`Invalid score format: ${score}`); // Silencing warning for potentially empty/TBD scores
     return null; 
   }
   const parts = score.split('-');
   if (parts.length !== 2) {
-    // console.warn(`Invalid score format: ${score}`);
     return null;
   }
   const ourGoals = parseInt(parts[0], 10);
   const opponentGoals = parseInt(parts[1], 10);
 
   if (isNaN(ourGoals) || isNaN(opponentGoals)) {
-    // console.warn(`Non-numeric score parts in: ${score}`);
     return null;
   }
   return { ourGoals, opponentGoals };
@@ -157,12 +152,10 @@ export function calculateSeasonStats(matches: Match[]): SeasonStats {
     else if (match.result === 0.5) stats.draws++;
     else if (match.result === 0) stats.losses++;
 
-    // Use ourScore and opponentScore directly if they are numbers
     if (typeof match.ourScore === 'number' && typeof match.opponentScore === 'number') {
         stats.goalsFor += match.ourScore;
         stats.goalsAgainst += match.opponentScore;
     } else {
-        // Fallback to parsing the score string if direct numbers aren't available
         const scoreParts = parseScore(match.score);
         if (scoreParts) {
             stats.goalsFor += scoreParts.ourGoals;
@@ -174,3 +167,8 @@ export function calculateSeasonStats(matches: Match[]): SeasonStats {
   return stats;
 }
 
+export const getResultStyle = (result: number) => {
+  if (result === 1) return { color: "var(--win-color)", letter: "W", label: "Win" };
+  if (result === 0) return { color: "var(--loss-color)", letter: "L", label: "Loss" };
+  return { color: "var(--draw-color)", letter: "D", label: "Draw" };
+};
