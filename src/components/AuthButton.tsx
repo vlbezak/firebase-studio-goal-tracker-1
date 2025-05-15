@@ -5,11 +5,16 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { LogOut, UserCircle } from "lucide-react";
-import { useTranslations } from '@/context/LanguageContext'; // Added
+import { useTranslations } from '@/context/LanguageContext';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const AuthButton = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
-  const t = useTranslations(); // Added
+  const t = useTranslations();
 
   if (loading) {
     return <Button variant="outline" disabled size="sm">{t('loading')}</Button>;
@@ -23,10 +28,16 @@ export const AuthButton = () => {
         ) : (
           <UserCircle className="h-7 w-7 text-muted-foreground" />
         )}
-        <Button variant="outline" onClick={signOut} size="sm" className="group">
-          <LogOut className="h-4 w-4 mr-2 group-hover:text-destructive" />
-          {t('signOut')}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" onClick={signOut} size="icon" aria-label={t('signOut')}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('signOut')}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     );
   }
