@@ -37,8 +37,12 @@
   "win": "Győzelem",
   "loss": "Vereség",
   "draw": "Döntetlen",
+  "winLetter": "GY",
+  "lossLetter": "V",
+  "drawLetter": "D",
   "backToDashboard": "Irányítópult",
   "otherMatches": "Egyéb Mérkőzések",
   "switchToHungarian": "Váltás magyarra",
-  "switchToEnglish": "Váltás angolra"
+  "switchToEnglish": "Váltás angolra",
+  "noFinalStanding": "nincs végső helyezés"
 }

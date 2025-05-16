@@ -24,7 +24,8 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Goal, BarChart3, Swords } from "lucide-react";
 import { Input } from "./ui/input";
-import { useTranslations } from '@/context/LanguageContext'; 
+import { useTranslations } from '@/context/LanguageContext';
+import { NoteTooltip } from '@/components/NoteTooltip'; // Ensure NoteTooltip is imported
 
 interface SeasonDetailsProps {
   season: string;
@@ -41,7 +42,7 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 
 const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean; teams: Team[]; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ matches, highlightMatchId, isMultiDateTournament, teams, t }) => {
   if (!matches || matches.length === 0) {
-    return <p className="text-sm text-muted-foreground px-6 pb-4">{t('noMatchesFoundFor', { query: ''})}</p>; 
+    return <p className="text-sm text-muted-foreground px-6 pb-4">{t('noMatchesFoundFor', { query: ''})}</p>;
   }
 
   return (
@@ -49,10 +50,10 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
       <TableHeader>
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[80px]">{t('date')}</TableHead>}
-          <TableHead className="w-3/5">{t('match')}</TableHead> {/* Adjusted width */}
-          <TableHead className="w-[40px] px-2">{t('score')}</TableHead>
-          <TableHead className="w-[40px] px-2">{t('result')}</TableHead>
-          <TableHead className="w-[40px] text-center">{t('notes')}</TableHead>
+          <TableHead className="w-3/5">{t('match')}</TableHead>
+          <TableHead className="w-[60px] px-1 text-center">{t('score')}</TableHead>
+          <TableHead className="w-[50px] px-1 text-center">{t('result')}</TableHead>
+          <TableHead className="w-[40px] px-1 text-center">{t('notes')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -64,42 +65,19 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell className="px-4">{match.name}</TableCell> 
-              <TableCell className="px-2">{match.score}</TableCell>
-              <TableCell>
+              <TableCell className="px-1 text-center">{match.score}</TableCell>
+              <TableCell className="px-1 text-center">
                 <span
-                  className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm"
+                  className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"
                   style={{ backgroundColor: color }}
                   title={label}
                 >
                   {letter}
                 </span>
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="px-1 text-center">
                 {match.notes ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        // onClick={(e) => e.stopPropagation()} // Prevent row click if any, might interfere with tooltip focus
-                        className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
-                        aria-label="View note"
-                      >
-                        <StickyNoteIcon className="h-4 w-4 text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="max-w-xs break-words"
-                      onPointerDownOutside={(event) => {
-                        if (event.target instanceof HTMLElement && event.target.closest('button[aria-label="View note"]')) {
-                          return;
-                        }
-                        // Radix might handle closing, but explicit control can be added here if needed
-                      }}
-                    >
-                      {match.notes}
-                    </TooltipContent>
-                  </Tooltip>
+                  <NoteTooltip notes={match.notes} />
                 ) : (
                   "-"
                 )}
@@ -129,24 +107,11 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
           <div className="flex flex-col items-end gap-1">
             {tournament.finalStanding && (
               <div className="text-sm font-semibold">
-                {getFinalStandingDisplay(tournament.finalStanding)}
+                {getFinalStandingDisplay(tournament.finalStanding, t)}
               </div>
             )}
             {tournament.notes && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                     <button
-                        type="button"
-                        className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
-                        aria-label="View note"
-                      >
-                        <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
-                      </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs break-words">
-                    {tournament.notes}
-                  </TooltipContent>
-                </Tooltip>
+                <NoteTooltip notes={tournament.notes} />
             )}
           </div>
         </div>
@@ -173,20 +138,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
             </CardDescription>
           </div>
            {match.notes && (
-             <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
-                    aria-label="View note"
-                  >
-                    <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs break-words">
-                  {match.notes}
-                </TooltipContent>
-             </Tooltip>
+             <NoteTooltip notes={match.notes} />
            )}
         </div>
       </CardHeader>
@@ -266,7 +218,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
         targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [highlightMatchId, displayItems]);
+  }, [highlightMatchId, filteredDisplayItems]); // Changed displayItems to filteredDisplayItems
   
   if (!matchesForSeason || !tournamentsForSeason || !teams) {
       return <p>{t('loading')}...</p>; 
@@ -318,7 +270,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
           </Card>
         )}
 
-        {displayItems.length === 0 && matchesPlayed === 0 && (
+        {filteredDisplayItems.length === 0 && matchesPlayed === 0 && searchTerm === '' && ( // Adjusted condition
              <Card className="w-full shadow-md">
               <CardContent className="pt-6">
                <p className="text-muted-foreground">{t('noMatchesOrTournamentsFound', { season })}</p>
@@ -347,4 +299,3 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 };
 
 export default SeasonDetails;
-

@@ -12,7 +12,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(dateString: string, dateFormat = "dd.MM.yyyy"): string {
   try {
-    return format(parseISO(dateString), dateFormat);
+    if (!dateString) return "Invalid date";
+    const parsed = parseISO(dateString);
+    return format(parsed, dateFormat);
   } catch (error) {
     console.error("Error formatting date:", dateString, error);
     return dateString; // Return original string if parsing fails
@@ -32,7 +34,7 @@ export function formatDateRange(startDateString: string, endDateString?: string)
   return formatDate(startDateString, "dd.MM.yyyy"); // Show full date if single day or start/end same
 }
 
-export function getFinalStandingDisplay(standing?: number | string): ReactNode {
+export function getFinalStandingDisplay(standing?: number | string, t?: (key: string) => string): ReactNode {
   if (standing === undefined || standing === null) return null;
 
   let displayStanding: ReactNode;
@@ -41,15 +43,15 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
   if (typeof standing === 'string') {
     const standingLower = standing.toLowerCase();
     if (standingLower === "no place") {
-      displayStanding = "no final standing";
-    } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) {
-      displayStanding = standing;
+      displayStanding = t ? t('noFinalStanding') : "no final standing";
+    } else if (isNaN(Number(standing.replace(/[^0-9]/g, '')))) { // Check if it's not a number after stripping non-digits
+      displayStanding = standing; // Keep as is if it's a descriptive string like "Champions"
       if (standingLower === "champions" || standingLower === "1st") iconColor = "text-yellow-500";
     } else { 
       const numericStanding = parseInt(standing.replace(/[^0-9]/g, ''), 10);
-      if (isNaN(numericStanding)) {
+      if (isNaN(numericStanding)) { // Should not happen if previous check passed, but for safety
         displayStanding = standing; 
-      } else {
+      } else { // It's a numeric string like "1st", "2nd", "5"
         switch (numericStanding) {
           case 1:
             displayStanding = "1st";
@@ -57,11 +59,11 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
             break;
           case 2:
             displayStanding = "2nd";
-            iconColor = "text-gray-400";
+            iconColor = "text-gray-400"; // Silver
             break;
           case 3:
             displayStanding = "3rd";
-            iconColor = "text-orange-500";
+            iconColor = "text-orange-500"; // Bronze
             break;
           default:
             displayStanding = `${numericStanding}th`;
@@ -69,7 +71,7 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
         }
       }
     }
-  } else if (typeof standing === 'number') { 
+  } else if (typeof standing === 'number') { // It's a raw number
     switch (standing) {
       case 1:
         displayStanding = "1st";
@@ -88,11 +90,11 @@ export function getFinalStandingDisplay(standing?: number | string): ReactNode {
         break;
     }
   } else {
-    displayStanding = String(standing); 
+    displayStanding = String(standing); // Fallback for other types
   }
   
-   if (displayStanding === undefined || displayStanding === null || displayStanding === "no final standing") {
-     return <span className="text-xs italic text-muted-foreground">no final standing</span>;
+   if (displayStanding === undefined || displayStanding === null || displayStanding === (t ? t('noFinalStanding') : "no final standing")) {
+     return <span className="text-xs italic text-muted-foreground">{t ? t('noFinalStanding') : "no final standing"}</span>;
    }
 
   return (
@@ -168,7 +170,7 @@ export function calculateSeasonStats(matches: Match[]): SeasonStats {
 }
 
 export const getResultStyle = (result: number, t: (key: string) => string) => {
-  if (result === 1) return { color: "var(--win-color)", letter: "W", label: t('win') };
-  if (result === 0) return { color: "var(--loss-color)", letter: "L", label: t('loss') };
-  return { color: "var(--draw-color)", letter: "D", label: t('draw') };
+  if (result === 1) return { color: "var(--win-color)", letter: t('winLetter') || "W", label: t('win') };
+  if (result === 0) return { color: "var(--loss-color)", letter: t('lossLetter') || "L", label: t('loss') };
+  return { color: "var(--draw-color)", letter: t('drawLetter') || "D", label: t('draw') };
 };

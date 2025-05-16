@@ -37,8 +37,12 @@
   "win": "Win",
   "loss": "Loss",
   "draw": "Draw",
+  "winLetter": "W",
+  "lossLetter": "L",
+  "drawLetter": "D",
   "backToDashboard": "Dashboard",
   "otherMatches": "Other Matches",
   "switchToHungarian": "Switch to Hungarian",
-  "switchToEnglish": "Switch to English"
+  "switchToEnglish": "Switch to English",
+  "noFinalStanding": "no final standing"
 }
