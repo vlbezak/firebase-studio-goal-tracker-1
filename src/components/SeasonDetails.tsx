@@ -22,10 +22,10 @@ import type { Match, Tournament, SeasonDisplayItem, Team } from "@/types/soccer"
 import { calculateSeasonStats, formatDate, formatDateRange, getFinalStandingDisplay, StickyNoteIcon, cn, getResultStyle } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { Goal, BarChart3, Swords } from "lucide-react";
+import { Goal, BarChart3, Swords, Search as SearchIcon } from "lucide-react"; // Added SearchIcon
 import { Input } from "./ui/input";
 import { useTranslations } from '@/context/LanguageContext';
-import { NoteTooltip } from '@/components/NoteTooltip'; // Ensure NoteTooltip is imported
+import { NoteTooltip } from '@/components/NoteTooltip';
 
 interface SeasonDetailsProps {
   season: string;
@@ -65,7 +65,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell className="py-2 px-2 sm:px-3">{formatDate(match.date, "dd.MM")}</TableCell>}
               <TableCell className="py-2 px-2 sm:px-4 font-medium">{match.name}</TableCell> 
-              <TableCell className="w-[60px] px-1 text-center py-2">{match.score}</TableCell>
+              <TableCell className="w-[60px] px-1 text-center py-2">{match.ourScore} : {match.opponentScore}</TableCell>
               <TableCell className="w-[50px] px-1 text-center py-2">
                 <span
                   className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"
@@ -144,7 +144,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
       </CardHeader>
       <CardContent className="flex items-center justify-between pt-0 pb-4 px-4 sm:px-6">
         <div className="text-base">
-          <span className="font-bold ml-2">{match.score}</span>
+          <span className="font-bold ml-2">{match.ourScore} : {match.opponentScore}</span>
         </div>
         <span
           className="font-bold w-8 h-8 flex items-center justify-center rounded-full text-white text-md shadow-sm"
@@ -242,6 +242,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
             placeholder={t('searchMatchesPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="pr-10" 
           />
         </div>
 
@@ -299,4 +300,3 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 };
 
 export default SeasonDetails;
-

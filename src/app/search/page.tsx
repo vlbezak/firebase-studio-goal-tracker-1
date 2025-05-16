@@ -11,13 +11,13 @@ import { getResultStyle, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslations } from '@/context/LanguageContext'; // Added
+import { useTranslations } from '@/context/LanguageContext';
 
 interface FilteredMatch {
   id: string;
   date: string;
   teams: string[]; 
-  score: number[]; 
+  score: [number, number]; // Tuple for ourScore, opponentScore
   result: number;
   notes?: string;
   tournamentName?: string;
@@ -44,7 +44,7 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 const SearchResultsPage = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
-  const t = useTranslations(); // Added
+  const t = useTranslations();
   const { 
     seasons: seasonNames, 
     matchesBySeason, 
@@ -180,13 +180,13 @@ const SearchResultsPage = () => {
           </TableHeader>
           <TableBody>
             {allFilteredMatches.map((match) => {
-               const { color, letter, label } = getResultStyle(match.result, t); // Pass t to getResultStyle
+               const { color, letter, label } = getResultStyle(match.result, t);
               return (
               <TableRow key={match.id}>
                 <TableCell className="text-xs px-2">{new Date(match.date).toLocaleDateString()}</TableCell>
                 <TableCell className="px-2">{match.teams.join(" vs ")}</TableCell>
                 <TableCell className="text-xs px-2 hidden sm:table-cell">{match.tournamentName} ({match.seasonName})</TableCell>
-                <TableCell className="text-center px-2">{match.score.join(" - ")}</TableCell>
+                <TableCell className="text-center px-2">{match.score[0]} : {match.score[1]}</TableCell>
                 <TableCell className="text-center px-2">
                   <span
                     className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"

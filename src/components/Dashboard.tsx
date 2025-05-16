@@ -13,13 +13,13 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import SeasonDetails from "./SeasonDetails";
 import type { Match, Team, Tournament } from "@/types/soccer";
-import { calculateSeasonStats, getResultStyle } from "@/lib/utils"; // Added getResultStyle
+import { calculateSeasonStats, getResultStyle } from "@/lib/utils";
 import { Goal, Loader2, AlertTriangle, Search as SearchIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSoccerData } from "@/hooks/useSoccerData";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useTranslations } from '@/context/LanguageContext'; // Added
+import { useTranslations } from '@/context/LanguageContext';
 
 const getTeamName = (teamId: string, teams: Team[]): string => {
   const team = teams.find(t => t.id === teamId);
@@ -32,7 +32,7 @@ const Dashboard = () => {
   const seasonParam = searchParams.get("season");
   const urlSearchParam = searchParams.get("q"); 
   const matchParam = searchParams.get("match");
-  const t = useTranslations(); // Added
+  const t = useTranslations();
 
   const [internalSearchQuery, setInternalSearchQuery] = useState(urlSearchParam || '');
 
@@ -117,7 +117,7 @@ const Dashboard = () => {
             allMatchesForSeason={matchesBySeason[season] || []}
             teams={teams}
             urlSearchParam={urlSearchParam}
-            t={t} // Pass t function
+            t={t}
           />
         ))}
         {filteredSeasons.length === 0 && urlSearchParam && (
@@ -135,7 +135,7 @@ interface SeasonDashboardProps {
   allMatchesForSeason: Match[];
   teams: Team[];
   urlSearchParam: string | null;
-  t: (key: string, params?: Record<string, string | number>) => string; // Add t prop
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const SeasonDashboard = ({ season, allMatchesForSeason, teams, urlSearchParam, t }: SeasonDashboardProps) => {
@@ -150,7 +150,7 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams, urlSearchParam, t
       <CardHeader>
         <CardTitle>
           <Link
-            href={`/?season=${season}${urlSearchParam ? `&search=${encodeURIComponent(urlSearchParam)}` : ''}`}
+            href={`/?season=${season}${urlSearchParam ? `&q=${encodeURIComponent(urlSearchParam)}` : ''}`}
             className="hover:underline"
           >
             {season}
@@ -182,19 +182,19 @@ const SeasonDashboard = ({ season, allMatchesForSeason, teams, urlSearchParam, t
           </CardHeader>
           <div className="flex items-center justify-start gap-x-1">
             {last5Matches.map((item) => {
-              const { color, letter, label } = getResultStyle(item.result, t); // Pass t to getResultStyle
+              const { color, letter, label } = getResultStyle(item.result, t);
               const ourTeamName = getTeamName(item.ourTeamId, teams);
               const opponentTeamName = getTeamName(item.opponentTeamId, teams);
-              const tooltipText = `${ourTeamName} vs ${opponentTeamName}, ${t('score')}: ${item.score}`;
+              const tooltipText = `${ourTeamName} vs ${opponentTeamName}, ${t('score')}: ${item.ourScore} : ${item.opponentScore}`;
 
               return (
                 <Tooltip key={item.id}>
                   <TooltipTrigger asChild>
                     <Link
-                      href={`/?season=${season}&match=${item.id}${urlSearchParam ? `&search=${encodeURIComponent(urlSearchParam)}` : ''}`}
+                      href={`/?season=${season}&match=${item.id}${urlSearchParam ? `&q=${encodeURIComponent(urlSearchParam)}` : ''}`}
                       className="circle flex items-center justify-center w-8 h-8 rounded-full text-primary-foreground font-bold text-sm shadow-sm"
                       style={{ backgroundColor: color }}
-                      aria-label={`${t('result')}: ${letter}, ${t('match')}: ${item.name}, ${t('score')}: ${item.score}`}
+                      aria-label={`${t('result')}: ${letter}, ${t('match')}: ${item.name}, ${t('score')}: ${item.ourScore} : ${item.opponentScore}`}
                     >
                       {letter}
                     </Link>
