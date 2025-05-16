@@ -24,7 +24,7 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Goal, BarChart3, Swords } from "lucide-react";
 import { Input } from "./ui/input";
-import { useTranslations } from '@/context/LanguageContext'; // Added
+import { useTranslations } from '@/context/LanguageContext'; 
 
 interface SeasonDetailsProps {
   season: string;
@@ -41,7 +41,7 @@ const getTeamName = (teamId: string, teams: Team[]): string => {
 
 const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; isMultiDateTournament: boolean; teams: Team[]; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ matches, highlightMatchId, isMultiDateTournament, teams, t }) => {
   if (!matches || matches.length === 0) {
-    return <p className="text-sm text-muted-foreground px-6 pb-4">{t('noMatchesFoundFor', { query: ''})}</p>; // Simplified message
+    return <p className="text-sm text-muted-foreground px-6 pb-4">{t('noMatchesFoundFor', { query: ''})}</p>; 
   }
 
   return (
@@ -49,7 +49,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
       <TableHeader>
         <TableRow>
           {isMultiDateTournament && <TableHead className="w-[80px]">{t('date')}</TableHead>}
-          <TableHead>{t('match')}</TableHead>
+          <TableHead className="w-3/5">{t('match')}</TableHead> {/* Adjusted width */}
           <TableHead className="w-[40px] px-2">{t('score')}</TableHead>
           <TableHead className="w-[40px] px-2">{t('result')}</TableHead>
           <TableHead className="w-[40px] text-center">{t('notes')}</TableHead>
@@ -63,7 +63,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
               {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
-              <TableCell className="px-4">{match.name}</TableCell>
+              <TableCell className="px-4">{match.name}</TableCell> 
               <TableCell className="px-2">{match.score}</TableCell>
               <TableCell>
                 <span
@@ -78,9 +78,25 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
                 {match.notes ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <StickyNoteIcon className="h-4 w-4 mx-auto text-muted-foreground cursor-pointer" />
+                      <button
+                        type="button"
+                        // onClick={(e) => e.stopPropagation()} // Prevent row click if any, might interfere with tooltip focus
+                        className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
+                        aria-label="View note"
+                      >
+                        <StickyNoteIcon className="h-4 w-4 text-muted-foreground" />
+                      </button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs break-words">
+                    <TooltipContent
+                      side="top"
+                      className="max-w-xs break-words"
+                      onPointerDownOutside={(event) => {
+                        if (event.target instanceof HTMLElement && event.target.closest('button[aria-label="View note"]')) {
+                          return;
+                        }
+                        // Radix might handle closing, but explicit control can be added here if needed
+                      }}
+                    >
                       {match.notes}
                     </TooltipContent>
                   </Tooltip>
@@ -119,7 +135,13 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
             {tournament.notes && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
+                     <button
+                        type="button"
+                        className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
+                        aria-label="View note"
+                      >
+                        <StickyNoteIcon className="h-5 w-5 text-muted-foreground cursor-pointer" />
+                      </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-xs break-words">
                     {tournament.notes}
@@ -153,7 +175,13 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
            {match.notes && (
              <Tooltip>
                 <TooltipTrigger asChild>
-                  <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
+                  <button
+                    type="button"
+                    className="cursor-pointer appearance-none bg-transparent border-none p-0 m-0 flex items-center justify-center"
+                    aria-label="View note"
+                  >
+                    <StickyNoteIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 cursor-pointer" />
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-xs break-words">
                   {match.notes}
@@ -181,7 +209,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
 
 const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId, matchesForSeason, tournamentsForSeason, teams }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
-  const t = useTranslations(); // Added
+  const t = useTranslations(); 
 
   const { wins, draws, losses, goalsFor, goalsAgainst, matchesPlayed } = calculateSeasonStats(matchesForSeason);
 
@@ -319,3 +347,4 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 };
 
 export default SeasonDetails;
+
