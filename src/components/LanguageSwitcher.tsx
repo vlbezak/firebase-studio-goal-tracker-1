@@ -9,13 +9,15 @@ export const LanguageSwitcher = () => {
   const t = useTranslations();
 
   const nextLang = language === 'en' ? 'hu' : 'en';
-  const buttonText = nextLang.toUpperCase();
+  // Display the current language on the button
+  const buttonText = language.toUpperCase(); 
   
   const toggleLanguage = () => {
     setLanguage(nextLang);
   };
 
-  const tooltipText = nextLang === 'hu' ? t('switchToHungarian') : t('switchToEnglish');
+  // Tooltip should describe the action: switching to the *other* language
+  const tooltipText = language === 'en' ? t('switchToHungarian') : t('switchToEnglish');
 
   return (
     <Button
@@ -29,4 +31,3 @@ export const LanguageSwitcher = () => {
     </Button>
   );
 };
-
