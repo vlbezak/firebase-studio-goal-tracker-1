@@ -10,9 +10,9 @@
   "date": "Dátum",
   "match": "Mérkőzés",
   "tournamentEvent": "Torna/Esemény",
-  "score": "Eredmény",
-  "result": "Kiírás",
-  "notes": "Jegyzetek",
+  "score": "Ered.",
+  "result": "Kim.",
+  "notes": "Jegyz.",
   "noMatchesFoundFor": "Nincs találat erre: \"{query}\".",
   "loadingSearchResults": "Keresési eredmények betöltése...",
   "errorLoadingData": "Hiba az adatok betöltésekor: {error}",
@@ -44,5 +44,5 @@
   "otherMatches": "Egyéb Mérkőzések",
   "switchToHungarian": "Váltás magyarra",
   "switchToEnglish": "Váltás angolra",
-  "noFinalStanding": "nincs végső helyezés"
+  "noFinalStanding": "nincs helyezés"
 }

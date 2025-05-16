@@ -63,10 +63,10 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
           
           return (
             <TableRow key={match.id} id={`match-${match.id}`} className={cn(isHighlighted ? "bg-accent text-accent-foreground" : "", "hover:bg-muted/50")}>
-              {isMultiDateTournament && <TableCell>{formatDate(match.date, "dd.MM")}</TableCell>}
-              <TableCell className="px-4">{match.name}</TableCell> 
-              <TableCell className="px-1 text-center">{match.score}</TableCell>
-              <TableCell className="px-1 text-center">
+              {isMultiDateTournament && <TableCell className="py-2 px-2 sm:px-3">{formatDate(match.date, "dd.MM")}</TableCell>}
+              <TableCell className="py-2 px-2 sm:px-4 font-medium">{match.name}</TableCell> 
+              <TableCell className="w-[60px] px-1 text-center py-2">{match.score}</TableCell>
+              <TableCell className="w-[50px] px-1 text-center py-2">
                 <span
                   className="font-bold w-6 h-6 flex items-center justify-center rounded-full text-white text-xs shadow-sm mx-auto"
                   style={{ backgroundColor: color }}
@@ -75,7 +75,7 @@ const MatchList: React.FC<{ matches: Match[]; highlightMatchId: string | null; i
                   {letter}
                 </span>
               </TableCell>
-              <TableCell className="px-1 text-center">
+              <TableCell className="w-[40px] px-1 text-center py-2">
                 {match.notes ? (
                   <NoteTooltip notes={match.notes} />
                 ) : (
@@ -96,7 +96,7 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
 
   return (
     <Card className="w-full mb-6 shadow-lg" id={`tournament-${tournament.id}`}>
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-4 px-4 sm:px-6">
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-xl">{tournament.name}</CardTitle>
@@ -116,20 +116,20 @@ const TournamentCard: React.FC<{ tournament: Tournament; matches: Match[]; highl
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0"> 
+      <CardContent className="px-2 sm:px-4 py-0"> 
         <MatchList matches={sortedMatches} highlightMatchId={highlightMatchId} isMultiDateTournament={isMultiDate} teams={teams} t={t} />
       </CardContent>
     </Card>
   );
 };
 
-const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null; t: (key: string, params?: Record<string, string | number>) => string; }> = ({ match, highlightMatchId, t }) => {
+const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | null; t: (key: string, params?: Record<string, string | number>) => string; teams: Team[] }> = ({ match, highlightMatchId, t, teams }) => {
   const { color, letter, label } = getResultStyle(match.result, t);
   const isHighlighted = match.id === highlightMatchId;
   
   return (
     <Card className={cn("w-full mb-6 shadow-lg", isHighlighted ? "ring-2 ring-primary" : "")} id={`match-${match.id}`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 px-4 sm:px-6">
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">{match.name}</CardTitle>
@@ -142,7 +142,7 @@ const IndependentMatchCard: React.FC<{ match: Match; highlightMatchId: string | 
            )}
         </div>
       </CardHeader>
-      <CardContent className="flex items-center justify-between pt-0 pb-4 px-6">
+      <CardContent className="flex items-center justify-between pt-0 pb-4 px-4 sm:px-6">
         <div className="text-base">
           <span className="font-bold ml-2">{match.score}</span>
         </div>
@@ -218,7 +218,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
         targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [highlightMatchId, filteredDisplayItems]); // Changed displayItems to filteredDisplayItems
+  }, [highlightMatchId, filteredDisplayItems]);
   
   if (!matchesForSeason || !tournamentsForSeason || !teams) {
       return <p>{t('loading')}...</p>; 
@@ -237,7 +237,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
           </Button>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 px-4 sm:px-0">
           <Input
             placeholder={t('searchMatchesPlaceholder')}
             value={searchTerm}
@@ -246,11 +246,11 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
         </div>
 
         {matchesPlayed > 0 && (
-          <Card className="w-full mb-6 shadow-md">
-            <CardHeader className="pb-3 pt-4">
+          <Card className="w-full mb-6 shadow-md mx-0 sm:mx-0">
+            <CardHeader className="pb-3 pt-4 px-4 sm:px-6">
               <CardTitle className="text-xl">{t('seasonSummary')}</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 text-sm pb-4 px-4 sm:px-6">
               <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-muted-foreground" />
                   <span className="font-semibold">{t('statistics')}:</span>
@@ -270,9 +270,9 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
           </Card>
         )}
 
-        {filteredDisplayItems.length === 0 && matchesPlayed === 0 && searchTerm === '' && ( // Adjusted condition
-             <Card className="w-full shadow-md">
-              <CardContent className="pt-6">
+        {filteredDisplayItems.length === 0 && matchesPlayed === 0 && searchTerm === '' && (
+             <Card className="w-full shadow-md mx-0 sm:mx-0">
+              <CardContent className="pt-6 px-4 sm:px-6">
                <p className="text-muted-foreground">{t('noMatchesOrTournamentsFound', { season })}</p>
               </CardContent>
              </Card>
@@ -289,7 +289,7 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
             return <TournamentCard key={`tournament-${item.data.id}-${index}`} tournament={item.data} matches={item.matches || []} highlightMatchId={highlightMatchId} teams={teams} t={t} />;
           }
           if (item.type === 'independent_match') {
-            return <IndependentMatchCard key={`independent-match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} t={t} />;
+            return <IndependentMatchCard key={`independent-match-${item.data.id}-${index}`} match={item.data} highlightMatchId={highlightMatchId} t={t} teams={teams} />;
           }
           return null;
         })}
@@ -299,3 +299,4 @@ const SeasonDetails: React.FC<SeasonDetailsProps> = ({ season, highlightMatchId,
 };
 
 export default SeasonDetails;
+
